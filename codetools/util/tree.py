@@ -3,9 +3,11 @@
 from .functional import partial
 from .sequence import all, any, concat, is_sequence
 
+
 def is_fork(x, leaves=()):
     'Test whether a tree is a fork (instead of a leaf).'
     return is_sequence(x) and not isinstance(x, leaves)
+
 
 def flatten(tree, leaves=()):
     ''' Flatten a tree, that is, recursively concatenate nested sequences.
@@ -26,14 +28,15 @@ def flatten(tree, leaves=()):
     '''
     # Pass leaf types around, avoiding infinite regress on strings
     _is_fork = partial(is_fork, leaves=leaves)
-    if isinstance(tree, basestring):
-        leaves += (basestring,)
+    if isinstance(tree, str):
+        leaves += (str, )
     _flatten = partial(flatten, leaves=leaves)
 
     if not _is_fork(tree):
         return [tree]
     else:
         return concat(_flatten(n) for n in tree)
+
 
 def tree_map(f, tree, leaves=()):
     ''' Map a function over the leaves of a tree.
@@ -47,15 +50,16 @@ def tree_map(f, tree, leaves=()):
     '''
     # Pass leaf types around, avoiding infinite regress on strings
     _is_fork = partial(is_fork, leaves=leaves)
-    if isinstance(tree, basestring):
-        leaves += (basestring,)
+    if isinstance(tree, str):
+        leaves += (str, )
     _tree_map = partial(tree_map, leaves=leaves)
 
     if not _is_fork(tree):
         return f(tree)
     else:
         seq = isinstance(tree, tuple) and tuple or list
-        return seq([ _tree_map(f,n) for n in tree ])
+        return seq([_tree_map(f, n) for n in tree])
+
 
 def tree_zip(*trees, **kw):
     ''' Zip recursively.
@@ -88,14 +92,15 @@ def tree_zip(*trees, **kw):
 
     # Pass leaf types around, avoiding infinite regress on strings
     _is_fork = partial(is_fork, leaves=leaves)
-    if any(isinstance(t, basestring) for t in trees):
-        leaves += (basestring,)
+    if any(isinstance(t, str) for t in trees):
+        leaves += (str, )
     _tree_zip = partial(tree_zip, leaves=leaves)
 
     if not all(_is_fork(t) for t in trees):
         return trees
     else:
-        return [ _tree_zip(*neighbors) for neighbors in zip(*trees) ]
+        return [_tree_zip(*neighbors) for neighbors in zip(*trees)]
+
 
 def tree_embeds(t, u, leaves=()):
     ''' ...
@@ -117,15 +122,16 @@ def tree_embeds(t, u, leaves=()):
     '''
     # Pass leaf types around, avoiding infinite regress on strings
     _is_fork = partial(is_fork, leaves=leaves)
-    if isinstance(t, basestring) or isinstance(u, basestring):
-        leaves += (basestring,)
+    if isinstance(t, str) or isinstance(u, str):
+        leaves += (str, )
     _tree_embeds = partial(tree_embeds, leaves=leaves)
 
     if not _is_fork(t):
         return True
     else:
         return (_is_fork(u) and len(list(t)) == len(list(u)) and
-                all(_tree_embeds(n,m) for n,m in zip(t,u)))
+                all(_tree_embeds(n, m) for n, m in zip(t, u)))
+
 
 def tree_shape(tree, leaves=()):
     ''' The shape of a tree expressed as nested tuples of nothing.
@@ -143,8 +149,8 @@ def tree_shape(tree, leaves=()):
     '''
     # Pass leaf types around, avoiding infinite regress on strings
     _is_fork = partial(is_fork, leaves=leaves)
-    if isinstance(tree, basestring):
-        leaves += (basestring,)
+    if isinstance(tree, str):
+        leaves += (str, )
     _tree_shape = partial(tree_shape, leaves=leaves)
 
     if not _is_fork(tree):

@@ -5,13 +5,13 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 # python standard library imports
 from UserDict import DictMixin
 
 # Enthought library imports
 from .adapted_data_context import AdaptedDataContext
+
 
 class IterableAdaptedDataContext(AdaptedDataContext):
     """ An AdaptedDataContext whose iteration includes any key mapped
@@ -26,6 +26,7 @@ class IterableAdaptedDataContext(AdaptedDataContext):
     Perhaps these methods could simply be moved into AdaptedDataContext,
     but for now, to ensure no old code is broken, we keep them separate.
     """
+
     # Fixme:? For consistency with AdaptedDataContext,
     # this could use a mixin, but to what purpose?
 
@@ -42,12 +43,11 @@ class IterableAdaptedDataContext(AdaptedDataContext):
         # may map back to earlier adapters.
         for adapter in self._adapters:
             if hasattr(adapter, 'adapt_keys') and hasattr(adapter,
-                                                          'adapt_name') :
-                _keys.update(key for key in adapter.adapt_keys()
-                             if adapter.adapt_name(self.subcontext, key)
-                             in _keys)
+                                                          'adapt_name'):
+                _keys.update(
+                    key for key in adapter.adapt_keys()
+                    if adapter.adapt_name(self.subcontext, key) in _keys)
         return list(_keys)
-
 
     """ Expose DictMixin's __contains__ method over DataContext's, which is
     inherited by AdaptedDataContext but only looks at the subcontext, not at
@@ -57,4 +57,3 @@ class IterableAdaptedDataContext(AdaptedDataContext):
     Fixme:? Might be more efficient to explicitly check subcontext first.
     """
     __contains__ = DictMixin.__contains__
-

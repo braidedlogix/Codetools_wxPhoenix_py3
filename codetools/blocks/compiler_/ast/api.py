@@ -1,1 +1,1 @@
-from ast import hash_structure, similar
+from .ast import hash_structure, similar

@@ -6,8 +6,6 @@
 # LICENSE.txt
 #
 
-from __future__ import absolute_import
-
 # Enthought library imports
 from traits.api import provides
 
@@ -40,7 +38,6 @@ class AdaptedDataContext(DataContext, AdapterManagerMixin):
 
         return self.subcontext.allows(value, name)
 
-
     ############################################################################
     # object interface
     ############################################################################
@@ -49,7 +46,6 @@ class AdaptedDataContext(DataContext, AdapterManagerMixin):
     def __getattr__(self, attr):
         return getattr(self.subcontext, attr)
 
-
     ############################################################################
     # Dictionary-like interface
     ############################################################################
@@ -57,7 +53,7 @@ class AdaptedDataContext(DataContext, AdapterManagerMixin):
     def keys(self):
         """ Return the list of variables available in context.
         """
-        return self.subcontext.keys()
+        return list(self.subcontext.keys())
 
     def __delitem__(self, name):
         """ Delete an item out of the context.
@@ -65,7 +61,6 @@ class AdaptedDataContext(DataContext, AdapterManagerMixin):
 
         name = self._adapt_name(self.subcontext, name)
         del self.subcontext[name]
-
 
     def __getitem__(self, name):
         """ Get the value bound to the variable 'name' from the context.

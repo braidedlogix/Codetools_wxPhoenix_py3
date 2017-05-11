@@ -6,13 +6,12 @@
 # LICENSE.txt
 #
 
-from __future__ import absolute_import
-
 # Enthought library imports
 from traits.api import HasTraits, Dict, Str, provides
 
 # Local imports
 from .i_adapter import IAdapter
+
 
 @provides(IAdapter)
 class NameAdapter(HasTraits):
@@ -24,7 +23,6 @@ class NameAdapter(HasTraits):
     #########################################################################
 
     map = Dict(Str, Str)
-
 
     ###########################################################################
     # IAdapter interface.
@@ -46,4 +44,4 @@ class NameAdapter(HasTraits):
         """ Returns a list containing any keys (names) defined by this
             adapter.
         """
-        return self.map.keys()
+        return list(self.map.keys())

@@ -5,12 +5,9 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-
 """ Basic implementation of the IListenableContext, IPersistableContext, and
 IRestrictedContext interfaces.
 """
-
-from __future__ import absolute_import
 
 from contextlib import contextmanager
 from UserDict import DictMixin
@@ -18,8 +15,8 @@ from UserDict import DictMixin
 from apptools import sweet_pickle
 from traits.adaptation.api import AdaptationOffer, \
     get_global_adaptation_manager
-from traits.api import (Bool, Dict, HasTraits, Str, Supports,
-                        adapt, provides, on_trait_change)
+from traits.api import (Bool, Dict, HasTraits, Str, Supports, adapt, provides,
+                        on_trait_change)
 
 from .i_context import IContext, ICheckpointable, IDataContext
 from .items_modified_event import ItemsModifiedEvent, ItemsModified
@@ -28,6 +25,7 @@ from .items_modified_event import ItemsModifiedEvent, ItemsModified
 from numpy import ufunc
 from types import FunctionType, MethodType, ModuleType
 NonPickleable = [FunctionType, MethodType, ModuleType, ufunc]
+
 
 def cannot_pickle(type):
     global NonPickleable
@@ -65,9 +63,11 @@ class ListenableMixin(HasTraits):
     def _defer_events_changed(self, old, new):
         return self._defer_events_changed_refire(new, 'items_modified')
 
-    def _defer_events_changed_refire(self, new, event_attribute='items_modified'):
+    def _defer_events_changed_refire(self,
+                                     new,
+                                     event_attribute='items_modified'):
         if not new:
-            for key, event in self._deferred_events.items():
+            for key, event in list(self._deferred_events.items()):
 
                 added = event.added
                 removed = event.removed
@@ -78,8 +78,7 @@ class ListenableMixin(HasTraits):
                         context=event.context,
                         added=added,
                         removed=removed,
-                        modified=modified,
-                    )
+                        modified=modified, )
                     setattr(self, event_attribute, new_event)
 
                 # Reset the deferred event.
@@ -87,11 +86,14 @@ class ListenableMixin(HasTraits):
                 # this delete.
                 self._deferred_events.pop(key, None)
 
-
     #### Private API ###########################################################
 
-    def _fire_event(self, added=None, removed=None, modified=None,
-        event_attribute='items_modified', context=None):
+    def _fire_event(self,
+                    added=None,
+                    removed=None,
+                    modified=None,
+                    event_attribute='items_modified',
+                    context=None):
         """ Fire an ItemsModifiedEvent.
 
         Parameters
@@ -125,8 +127,7 @@ class ListenableMixin(HasTraits):
                     context=context,
                     added=added,
                     removed=removed,
-                    modified=modified,
-                )
+                    modified=modified, )
                 setattr(self, event_attribute, new_event)
 
     def _add_deferred_event(self, context, added, removed, modified):
@@ -160,7 +161,6 @@ class ListenableMixin(HasTraits):
             if key not in event.added:
                 event.modified.append(key)
         event.modified = list(set(event.modified))
-
 
 
 class PersistableMixin(HasTraits):
@@ -207,7 +207,7 @@ class PersistableMixin(HasTraits):
 
         # Check if there is a key called 'context' that references to its
         # bindings
-        if self.has_key('context') and self['context'] == self._bindings:
+        if 'context' in self and self['context'] == self._bindings:
             self.pop('context')
 
         if hasattr(file_or_path, 'write'):
@@ -220,7 +220,7 @@ class PersistableMixin(HasTraits):
 
         try:
             # Filter out nonpickleable data from the context dictionary
-            for item in self.keys():
+            for item in list(self.keys()):
                 if isinstance(self[item], tuple(NonPickleable)):
                     del self[item]
             sweet_pickle.dump(self, file_object, 1)
@@ -240,7 +240,6 @@ class DataContext(ListenableMixin, PersistableMixin, DictMixin):
     # The underlying dictionary.
     subcontext = Supports(IContext, factory=dict)
 
-
     #### IContext interface ####################################################
 
     def __contains__(self, key):
@@ -255,7 +254,7 @@ class DataContext(ListenableMixin, PersistableMixin, DictMixin):
         # Figure out if the item was added or modified
         added = []
         modified = []
-        if key in self.subcontext.keys():
+        if key in list(self.subcontext.keys()):
             modified = [key]
         else:
             added = [key]
@@ -279,7 +278,7 @@ class DataContext(ListenableMixin, PersistableMixin, DictMixin):
         -------
         keys : list of str
         """
-        return self.subcontext.keys()
+        return list(self.subcontext.keys())
 
     # Expose DictMixin's get method over HasTraits'.
     get = DictMixin.get
@@ -329,7 +328,8 @@ class DataContext(ListenableMixin, PersistableMixin, DictMixin):
         # WORKAROUND: subclassing from DataContext can cause the adapter to put the real
         # context in subcontext if used in a class which adapts. In this case
         # call allows on the real context. This only happens occasionally and is a bug.
-        if self.subcontext is not None and isinstance(self.subcontext, DataContext):
+        if self.subcontext is not None and isinstance(self.subcontext,
+                                                      DataContext):
             return self.subcontext.allows(value, name)
         return True
 
@@ -365,8 +365,7 @@ class DataContext(ListenableMixin, PersistableMixin, DictMixin):
 data_context_offer = AdaptationOffer(
     factory=lambda x: DataContext(subcontext=x),
     from_protocol=IContext,
-    to_protocol=IDataContext
-)
+    to_protocol=IDataContext)
 
 
 def register_i_context_adapter_offers(adaptation_manager):

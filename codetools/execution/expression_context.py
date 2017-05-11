@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 # Global imports
 from UserDict import DictMixin
@@ -17,8 +16,9 @@ from traits.api import Str, Dict, Any, List, AdaptsTo, on_trait_change, provides
 from codetools.blocks.api import Block
 from codetools.contexts.data_context import ListenableMixin, PersistableMixin
 from codetools.contexts.i_context import (IContext, IListenableContext,
-        IPersistableContext)
+                                          IPersistableContext)
 from codetools.contexts.items_modified_event import ItemsModified
+
 
 # FIXME: ICheckpointable would be nice
 @provides(IListenableContext, IPersistableContext, IContext)
@@ -40,7 +40,8 @@ class ExpressionContext(ListenableMixin, PersistableMixin, DictMixin):
     _dependencies = Dict(Str, List(Str))
 
     def __init__(self, underlying_context, **traits):
-        super(ExpressionContext, self).__init__(underlying_context=underlying_context)
+        super(ExpressionContext, self).__init__(
+            underlying_context=underlying_context)
 
     def __delitem__(self, key):
         """Delete an item from the ExpressionContext -- either in the underlying context,
@@ -61,7 +62,7 @@ class ExpressionContext(ListenableMixin, PersistableMixin, DictMixin):
         return key in self.underlying_context
 
     def __getitem__(self, key):
-        if key in self.underlying_context.keys():
+        if key in list(self.underlying_context.keys()):
             return self.underlying_context[key]
         else:
             try:
@@ -104,13 +105,15 @@ class ExpressionContext(ListenableMixin, PersistableMixin, DictMixin):
 
     @on_trait_change('underlying_context:items_modified')
     def _underlying_context_items_modifed(self, event):
-        new_event = ItemsModified(context=self,
-                                  added=[x for x in event.added],
-                                  removed=[x for x in event.removed],
-                                  modified=[x for x in event.modified])
-        for event_list in (new_event.added, new_event.modified, new_event.removed):
+        new_event = ItemsModified(
+            context=self,
+            added=[x for x in event.added],
+            removed=[x for x in event.removed],
+            modified=[x for x in event.modified])
+        for event_list in (new_event.added, new_event.modified,
+                           new_event.removed):
             for item in event_list:
-                if item in self._dependencies.keys():
+                if item in list(self._dependencies.keys()):
                     for dep_item in self._dependencies[item]:
                         if dep_item not in event_list:
                             event_list.append(dep_item)
@@ -123,4 +126,3 @@ class ExpressionContext(ListenableMixin, PersistableMixin, DictMixin):
         self._expressions = {}
         self._dependencies = {}
         return
-

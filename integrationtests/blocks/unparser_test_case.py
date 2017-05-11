@@ -5,6 +5,7 @@ import compiler
 # Local imports
 from codetools.blocks.api import unparse
 
+
 class UnparseCompilerAstTestCase(unittest.TestCase):
 
     ##########################################################################
@@ -384,7 +385,7 @@ class UnparseCompilerAstTestCase(unittest.TestCase):
         """
         if desired is None:
             desired = code
-        ast = compiler.parse(code,'exec')
+        ast = compiler.parse(code, 'exec')
         actual = unparse(ast)
         self.assertEqual(desired.strip(), actual.strip())
 
@@ -396,7 +397,7 @@ class UnparseCompilerAstTestCase(unittest.TestCase):
         """
         if desired is None:
             desired = code
-        ast = compiler.parse(code,'exec')
+        ast = compiler.parse(code, 'exec')
         actual = unparse(ast, True)
         self.assertEqual(desired.strip(), actual.strip())
 

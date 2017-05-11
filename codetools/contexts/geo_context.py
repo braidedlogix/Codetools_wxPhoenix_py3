@@ -17,20 +17,18 @@ class GeoContext(DataContext):
         """
         return isinstance(value, (UnitArray, ndarray))
 
-
     def get_index_name(self):
         """ Get the index name of the context.
         """
 
         # Return the first key whose value's units is length-based.
-        for name in self.keys():
+        for name in list(self.keys()):
             if isinstance(self[name], UnitArray) and \
                 self[name].units is not None and \
                 self[name].units.derivation == (1,0,0,0,0,0,0):
                 return name
 
         return None
-
 
     def get_index(self):
         """ Get index of the context
@@ -52,12 +50,11 @@ if __name__ == '__main__':
     from numpy import arange
     from scimath.units.length import feet
 
-    g = GeoContext(name = 'geo')
-    g['depth'] = UnitArray(arange(0., 5000., 100.), units = feet)
+    g = GeoContext(name='geo')
+    g['depth'] = UnitArray(arange(0., 5000., 100.), units=feet)
     g['foo'] = arange(30, 530.0, 10.)
 
-    print g.context_names
-    print g.get_index()
-
+    print(g.context_names)
+    print(g.get_index())
 
 ### EOF ------------------------------------------------------------------------

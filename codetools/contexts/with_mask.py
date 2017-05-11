@@ -110,7 +110,6 @@ local environment; and cling off outside the 'with' block/control.
       to 2.5.1., it works well.
 
 """
-from __future__ import absolute_import
 
 # Standard imports
 from numpy import ndarray
@@ -125,6 +124,7 @@ from traits.protocols.api import adapt
 
 # Local imports
 from .with_mask_adapter import WithMaskAdapter
+
 
 class Mask(object):
     """ Class that is going to provide the interface between the block and
@@ -147,36 +147,32 @@ class Mask(object):
 
         self.mask = object
 
-
     def __enter__(self):
         """ Enter method.
         """
         locals_val = sys._getframe().f_back.f_locals
-        if locals_val.has_key('context') and isinstance(locals_val['context'],
-                                                        dict):
+        if 'context' in locals_val and isinstance(locals_val['context'], dict):
             locals_val = locals_val['context']
 
         # Make a copy of this context.
         locals_val = adapt(locals_val, ICheckpointable).checkpoint()
 
         adapters = [WithMaskAdapter(mask=self.mask)]
-        self.context = AdaptedDataContext(subcontext=locals_val,
-                                          _adapters=adapters)
+        self.context = AdaptedDataContext(
+            subcontext=locals_val, _adapters=adapters)
 
         return
-
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """ Exit method.
         """
         locals_val = sys._getframe().f_back.f_locals
-        if locals_val.has_key('context') and isinstance(locals_val['context'],
-                                                        dict):
+        if 'context' in locals_val and isinstance(locals_val['context'], dict):
             locals_val = locals_val['context']
 
-        for k in locals_val.keys():
-            if k in self.context.keys() and isinstance(self.context[k],
-                                                       ndarray):
+        for k in list(locals_val.keys()):
+            if k in list(self.context.keys()) and isinstance(self.context[k],
+                                                             ndarray):
                 equal_values = self.context[k] == locals_val[k]
                 if isinstance(equal_values, ndarray):
                     equal_values = equal_values.all()
@@ -191,22 +187,22 @@ class Mask(object):
 
 # Test
 if __name__ == '__main__':
-#    # 1. Usage without using block and context:
-#    from numpy import arange, zeros
-#    depth = arange(0., 10000., 1000.)
-#    vp = zeros(depth.shape)
-#    vs = zeros(depth.shape)
-#    with Mask((depth < 4000.0) & (depth > 1000.0)):
-#        vp = 1.0
-#        vs = 1.5
-#    print vp, vs
+    #    # 1. Usage without using block and context:
+    #    from numpy import arange, zeros
+    #    depth = arange(0., 10000., 1000.)
+    #    vp = zeros(depth.shape)
+    #    vs = zeros(depth.shape)
+    #    with Mask((depth < 4000.0) & (depth > 1000.0)):
+    #        vp = 1.0
+    #        vs = 1.5
+    #    print vp, vs
 
     # 2. Usage with block and context:
     from numpy import arange, zeros
     from codetools.blocks.api import Block
     dc = DataContext(name='dc')
     context = ParametricContext(dc)
-    dc['depth'] = arange(0.,10000., 1000.)
+    dc['depth'] = arange(0., 10000., 1000.)
     dc['vp'] = zeros(dc['depth'].shape)
     dc['vs'] = zeros(dc['depth'].shape)
     context['context'] = dc._bindings
@@ -216,29 +212,29 @@ if __name__ == '__main__':
            'from codetools.contexts.with_mask import Mask\n'\
            'with Mask((depth < 4000.0) & (depth > 1000.0)):vp=1.5 ; vs=1.0'
 
-##     # Expanded form of with statement taken from PEP 343. This is just for testing
-##     code =   'from numpy import zeros\n'\
-##              'array_len = depth.shape\n'\
-##              'vp = zeros(array_len)\n'\
-##              'vs = zeros(array_len)\n'\
-##              'from codetools.contexts.with_mask import Mask\n'\
-##              'mgr = Mask((depth < 4000.0) & (depth > 1000.0))\n'\
-##              'exit_code = mgr.__exit__\n'\
-##              'mgr.__enter__()\n'\
-##              'exc = True\n'\
-##              'try:\n'\
-##              '    try:\n'\
-##              '        vp = 1.0\n'\
-##              '        vs = 1.5\n'\
-##              '    except:\n'\
-##              '        exc = False\n'\
-##              'finally:\n'\
-##              '    if exc:\n'\
-##              '        exit_code(None, None, None)'
+    ##     # Expanded form of with statement taken from PEP 343. This is just for testing
+    ##     code =   'from numpy import zeros\n'\
+    ##              'array_len = depth.shape\n'\
+    ##              'vp = zeros(array_len)\n'\
+    ##              'vs = zeros(array_len)\n'\
+    ##              'from codetools.contexts.with_mask import Mask\n'\
+    ##              'mgr = Mask((depth < 4000.0) & (depth > 1000.0))\n'\
+    ##              'exit_code = mgr.__exit__\n'\
+    ##              'mgr.__enter__()\n'\
+    ##              'exc = True\n'\
+    ##              'try:\n'\
+    ##              '    try:\n'\
+    ##              '        vp = 1.0\n'\
+    ##              '        vs = 1.5\n'\
+    ##              '    except:\n'\
+    ##              '        exc = False\n'\
+    ##              'finally:\n'\
+    ##              '    if exc:\n'\
+    ##              '        exit_code(None, None, None)'
 
     b = Block(code)
     b.execute(context)
-    print 'vp', context['vp']
-    print 'vs', context['vs']
+    print('vp', context['vp'])
+    print('vs', context['vs'])
 
 ### EOF ------------------------------------------------------------------------

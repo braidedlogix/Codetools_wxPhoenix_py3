@@ -16,22 +16,26 @@ from codetools.contexts.api import context_function, local_context
 #############################################################################
 
 import math
+
+
 def f(x):
     """This function knows nothing of numpy"""
-    return 2*math.sin(x) + math.cos(x)
+    return 2 * math.sin(x) + math.cos(x)
 
 
 import numpy
+
+
 def numpy_math_context():
     """This function returns a context where 'math' is a reference to numpy."""
     return {'math': numpy}
+
 
 # this essentially vectorizes the function
 f = context_function(f, numpy_math_context)
 
 # so that this works
-print f(numpy.array([0, 0.5, 1])*numpy.pi)
-
+print(f(numpy.array([0, 0.5, 1]) * numpy.pi))
 
 #############################################################################
 # Example 2
@@ -39,15 +43,18 @@ print f(numpy.array([0, 0.5, 1])*numpy.pi)
 
 accumulation_dict = {'total': 0}
 
+
 def accumulator_factory():
     """Return the same dictionary on every function call"""
     return accumulation_dict
+
 
 @local_context(accumulator_factory)
 def accumulator(value):
     """Accumulate total in accumulation_dict"""
     total += value
 
+
 for i in range(10):
     accumulator(i)
-    print accumulation_dict['total']
+    print(accumulation_dict['total'])

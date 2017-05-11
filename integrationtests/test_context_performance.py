@@ -78,9 +78,9 @@ class DataContextTestCase(AbstractContextTestCase):
         context_timer = timeit.Timer(context_expr, context_setup)
         context_res = context_timer.timeit(N)
 
-
-        slowdown = context_res/std_res
-        msg = 'actual slowdown: %f\nallowed slowdown: %f' % (slowdown, allowed_slowdown)
+        slowdown = context_res / std_res
+        msg = 'actual slowdown: %f\nallowed slowdown: %f' % (slowdown,
+                                                             allowed_slowdown)
         assert slowdown < allowed_slowdown, msg
 
 
@@ -148,7 +148,7 @@ class MultiContextTestCase(AbstractContextTestCase):
         context_timer = timeit.Timer(context_expr, context_setup)
         context_res = eval_timer.timeit(N)
 
-        slowdown = context_res/std_res
+        slowdown = context_res / std_res
         msg = 'actual slowdown: %f' % slowdown
         assert slowdown < allowed_slowdown, msg
 
@@ -212,12 +212,10 @@ class UnitConversionContextAdapterTestCase(unittest.TestCase):
         adp = timeit.Timer(code, setup)
         adp_res = adp.timeit(N)
 
-
-        slowdown = adp_res/std_res
-        msg = 'actual slowdown, time: %f' % slowdown, adp_res/N
-        print "[actual slowdown=%3.2f]  " % slowdown,
+        slowdown = adp_res / std_res
+        msg = 'actual slowdown, time: %f' % slowdown, adp_res / N
+        print("[actual slowdown=%3.2f]  " % slowdown, end=' ')
         assert slowdown < allowed_slowdown, msg
-
 
 
 if __name__ == '__main__':

@@ -5,11 +5,11 @@ from codetools.contexts.adapter.unit_conversion_adapter import UnitConversionAda
 
 
 class AdapterManagerMixinTestCase(unittest.TestCase):
-
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.manager = AdapterManagerMixin()
         self.adapter = UnitConversionAdapter()
+
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
@@ -17,6 +17,7 @@ class AdapterManagerMixinTestCase(unittest.TestCase):
         self.manager.push_adapter(self.adapter)
         popped_adapter = self.manager.pop_adapter()
         self.assertEqual(self.adapter, popped_adapter)
+
 
 if __name__ == '__main__':
     unittest.main()

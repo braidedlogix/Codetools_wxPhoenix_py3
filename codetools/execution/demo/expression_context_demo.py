@@ -12,6 +12,7 @@ from codetools.contexts.data_context import DataContext
 from blockcanvas.plot.plot_data_context_adapter import \
      PlotDataContextAdapter
 
+
 class ExpressionContextDemo(HasTraits):
     code = Code()
     execute = Button()
@@ -22,14 +23,16 @@ class ExpressionContextDemo(HasTraits):
     data_context = Instance(DataContext)
     expression_context = Instance(ExpressionContext)
 
-    traits_view = View('code',
-                       'execute',
-                       Item('plots', editor=ComponentEditor()),
-                       'value_expression',
-                       'index_expression',
-                       Item('view_expression', show_label=False),
-                       resizable=True)
-
+    traits_view = View(
+        'code',
+        'execute',
+        Item(
+            'plots', editor=ComponentEditor()),
+        'value_expression',
+        'index_expression',
+        Item(
+            'view_expression', show_label=False),
+        resizable=True)
 
     def __init__(self):
         self.data_context = DataContext()
@@ -38,7 +41,8 @@ class ExpressionContextDemo(HasTraits):
         return
 
     def _view_expression_fired(self):
-        context_adapter = PlotDataContextAdapter(context=self.expression_context)
+        context_adapter = PlotDataContextAdapter(
+            context=self.expression_context)
 
         plot = Plot(context_adapter)
         plot.plot((self.index_expression, self.value_expression))
@@ -47,11 +51,10 @@ class ExpressionContextDemo(HasTraits):
         return
 
     def _execute_fired(self):
-        exec self.code in {}, self.data_context
+        exec(self.code, {}, self.data_context)
         return
+
 
 if __name__ == '__main__':
     ecd = ExpressionContextDemo()
     ecd.configure_traits()
-
-

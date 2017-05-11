@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 from contextlib import contextmanager
 
@@ -107,6 +106,7 @@ def defer_events(data_context):
         if defer_events.context_counts[data_context] == 0:
             data_context.defer_events = False
 
+
 defer_events.context_counts = {}
 
 
@@ -124,7 +124,7 @@ class IListenableContext(IContext):
     # and when reverted to false, one single event fires that represents the net
     # change since 'defer_events' was set.
     defer_events = Bool(False)
-    
+
     @contextmanager
     def deferred_events(self):
         """ Context manager that sets defer_events to False """
@@ -230,9 +230,11 @@ class IDataContext(ICheckpointable, IListenableContext, IPersistableContext,
 
 #### Adaptation ###############################################################
 
+
 class CheckPointableDictAdapter(object):
     """ Adapt a dictionary to the ICheckpointable interface.
     """
+
     def __init__(self, dict):
         self.dict = dict
 
@@ -242,17 +244,12 @@ class CheckPointableDictAdapter(object):
 
 # Python dictionaries satisfy the IContext interface.
 dict_to_i_context_offer = AdaptationOffer(
-    factory=no_adapter_necessary,
-    from_protocol=dict,
-    to_protocol=IContext
-)
-
+    factory=no_adapter_necessary, from_protocol=dict, to_protocol=IContext)
 
 dict_to_i_checkpointable_offer = AdaptationOffer(
     factory=CheckPointableDictAdapter,
     from_protocol=dict,
-    to_protocol=ICheckpointable,
-)
+    to_protocol=ICheckpointable, )
 
 
 def register_dict_to_context_adapter_offers(adaptation_manager):

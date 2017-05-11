@@ -9,6 +9,7 @@ from .sequence import union
 
 # TODO Fire more events? e.g. 'classes_items_changed'
 
+
 class Equivalence(HasTraits):
     ''' An equivalence relation.
 
@@ -71,7 +72,7 @@ class Equivalence(HasTraits):
     ### Properties ############################################################
 
     def _get_classes(self):
-        return map(frozenset, self._classes)
+        return list(map(frozenset, self._classes))
 
     ### object interface ######################################################
 
@@ -97,7 +98,7 @@ class Equivalence(HasTraits):
             return (len(set(args)) == 1 or
                     set(args[1:]).issubset(self.get_class(args[0])))
         else:
-            return True # Vacuously
+            return True  # Vacuously
 
     def get_class(self, a):
         "'a's equivalence class (the set of elements equivalent to 'a')."

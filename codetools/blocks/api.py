@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 from .analysis import NameFinder, free_vars, local_vars, conditional_local_vars
 from .block import Block, Expression, to_block

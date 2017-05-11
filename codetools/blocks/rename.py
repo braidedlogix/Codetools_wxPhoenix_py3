@@ -8,7 +8,7 @@
 """ Remanes tokens in compiler.ast structures.
 
 """
-from __future__ import absolute_import
+
 
 def rename(ast, mode, old, new):
     if mode not in ['variable', 'function']:
@@ -17,6 +17,7 @@ def rename(ast, mode, old, new):
     rename_ast = RenameAst(ast, mode, old, new)
 
     return rename_ast.tree, rename_ast.modifications
+
 
 class RenameAst:
     """ Methods in this class recursively traverse an AST and
@@ -60,10 +61,9 @@ class RenameAst:
         if tree.__class__.__name__ == 'NoneType' and not self._do_indent:
             return
 
-        if hasattr(self, "_"+tree.__class__.__name__):
-            meth = getattr(self, "_"+tree.__class__.__name__)
+        if hasattr(self, "_" + tree.__class__.__name__):
+            meth = getattr(self, "_" + tree.__class__.__name__)
             meth(tree)
-
 
     #########################################################################
     # compiler.ast unparsing methods.
@@ -351,7 +351,6 @@ class RenameAst:
         self._dispatch(t.left)
         self._dispatch(t.right)
 
-
 if __name__ == "__main__":
     from block import Block
     code = "with m as z:\n"\
@@ -360,7 +359,7 @@ if __name__ == "__main__":
 
     bl = Block(code)
     ast = bl.ast
-    print rename(ast, 'variable', 'a', 'A')
-    print rename(ast, 'variable', 'm', 'M')
-    print rename(ast, 'variable', 'foo', 'FOO')
-    print rename(ast, 'function', 'foo', 'Foo')
+    print(rename(ast, 'variable', 'a', 'A'))
+    print(rename(ast, 'variable', 'm', 'M'))
+    print(rename(ast, 'variable', 'foo', 'FOO'))
+    print(rename(ast, 'function', 'foo', 'Foo'))

@@ -2,6 +2,8 @@ from codetools.contexts.api import DataContext
 from codetools.execution.api import ExpressionContext
 
 import unittest
+
+
 class ExpressionContextTest(unittest.TestCase):
     def test_eval(self):
         """Test most straightforward evaluation functionality"""
@@ -27,6 +29,3 @@ class ExpressionContextTest(unittest.TestCase):
     def _event_handler(self, event):
         self.event_count += 1
         self.last_event = event
-
-
-

@@ -1,5 +1,5 @@
 # Standard library imports
-from cStringIO import StringIO
+from io import StringIO
 import os
 import sys
 import unittest
@@ -41,25 +41,27 @@ class MultiContextTestCase(AbstractContextTestCase):
 
         class C(DataContext):
             f = Any
+
             def __init__(self, f):
                 super(C, self).__init__(f=f)
+
             def allows(self, value, name):
                 return self.f(value, name)
 
         # `allows' predicates
-        all = lambda v,n: True
-        none = lambda v,n: False
-        positive = lambda v,n: v > 0
-        negative = lambda v,n: v < 0
+        all = lambda v, n: True
+        none = lambda v, n: False
+        positive = lambda v, n: v > 0
+        negative = lambda v, n: v < 0
 
         # Make a multi-context where the top context only accepts positive
         # numbers and the next one accepts anything. For robustness, add some
         # noise below.
-        multi = MultiContext(C(positive), C(all),
-                             C(all), C(none), C(negative)) # Noise
+        multi = MultiContext(
+            C(positive), C(all), C(all), C(none), C(negative))  # Noise
         [upper, lower] = multi.subcontexts[0:2]
 
-        for a,b in [(3,8), (3,-8), (-3,8), (-3,-8)]:
+        for a, b in [(3, 8), (3, -8), (-3, 8), (-3, -8)]:
 
             # Bind and rebind 'x'
             multi['x'] = a
@@ -80,8 +82,8 @@ class MultiContextTestCase(AbstractContextTestCase):
             appear to have one set of keys where each key is unique (i.e. a 'set')
         """
 
-        d1 = DataContext(name='d1',subcontext={'a':1,'b':2})
-        d2 = DataContext(name='d2',subcontext={'a':3,'c':4})
+        d1 = DataContext(name='d1', subcontext={'a': 1, 'b': 2})
+        d2 = DataContext(name='d2', subcontext={'a': 3, 'c': 4})
         m = MultiContext(d1, d2, name='m')
 
         sorted_keys = sorted(m.keys())
@@ -90,35 +92,34 @@ class MultiContextTestCase(AbstractContextTestCase):
     def test_contexts_list_changes(self):
         """ Checking if change in items in contexts updates the multi-context
         """
-        d1 = DataContext(name = 'test_context1',
-                         subcontext = {'a':1, 'b':2})
-        d2 = DataContext(name = 'test_context2')
+        d1 = DataContext(name='test_context1', subcontext={'a': 1, 'b': 2})
+        d2 = DataContext(name='test_context2')
 
-        m = MultiContext(*[d1,d2], **{'name': 'test_mc'})
-        self.assertTrue(len(m.keys()) == 2)
+        m = MultiContext(* [d1, d2], **{'name': 'test_mc'})
+        self.assertTrue(len(list(m.keys())) == 2)
 
         # Add another context
-        d3 = DataContext(name = 'test_context3',
-                         subcontext = {'c':3, 'd':4})
+        d3 = DataContext(name='test_context3', subcontext={'c': 3, 'd': 4})
         m.subcontexts.append(d3)
-        self.assertTrue(len(m.keys()) == 4)
+        self.assertTrue(len(list(m.keys())) == 4)
 
         # Modify an existing context
         m.subcontexts[1].subcontext = {'cc': 5}
-        self.assertTrue(len(m.keys()) == 5)
+        self.assertTrue(len(list(m.keys())) == 5)
 
         # Remove a context
         m.subcontexts.pop(0)
-        self.assertTrue(len(m.keys()) == 3)
+        self.assertTrue(len(list(m.keys())) == 3)
 
 
 def test_persistence():
     """ Checking if the data persists correctly when saving and loading back
     """
-    d1 = DataContext(name = 'test_context1',
-                     subcontext = {'a':1, 'b':2})
-    d2 = DataContext(name = 'test_context2',
-                     subcontext = {'foo':100, 'bar':200, 'baz':300})
+    d1 = DataContext(name='test_context1', subcontext={'a': 1, 'b': 2})
+    d2 = DataContext(
+        name='test_context2', subcontext={'foo': 100,
+                                          'bar': 200,
+                                          'baz': 300})
     m = MultiContext(d1, d2, name='test_mc')
 
     f = StringIO()
@@ -154,7 +155,7 @@ def test_checkpoint():
     for csc, msc in zip(copy.subcontexts, m.subcontexts):
         assert csc is not msc
         assert set(csc.keys()) == set(msc.keys())
-        for key in msc.keys():
+        for key in list(msc.keys()):
             assert csc[key] is msc[key]
 
     assert set(copy.keys()) == set(m.keys())
@@ -178,12 +179,9 @@ def test_checkpoint_nested():
     for csc, msc in zip(csc1.subcontexts, msc1.subcontexts):
         assert csc is not msc
         assert set(csc.keys()) == set(msc.keys())
-        for key in msc.keys():
+        for key in list(msc.keys()):
             assert csc[key] is msc[key]
 
     assert set(copy.keys()) == set(m.keys())
     assert copy['a'] is m['a']
     assert copy['b'] is m['b']
-
-
-

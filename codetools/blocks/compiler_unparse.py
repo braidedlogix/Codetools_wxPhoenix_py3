@@ -12,16 +12,24 @@
 """
 
 import sys
-import cStringIO
+import io
 from compiler.ast import Const, Name, Tuple, Div, Mul, Sub, Add
 
+
 def unparse(ast, single_line_functions=False):
-    s = cStringIO.StringIO()
+    s = io.StringIO()
     UnparseCompilerAst(ast, s, single_line_functions)
     return s.getvalue().lstrip()
 
-op_precedence = { 'compiler.ast.Power':3, 'compiler.ast.Mul':2, 'compiler.ast.Div':2,
-                  'compiler.ast.Add':1, 'compiler.ast.Sub':1 }
+
+op_precedence = {
+    'compiler.ast.Power': 3,
+    'compiler.ast.Mul': 2,
+    'compiler.ast.Div': 2,
+    'compiler.ast.Add': 1,
+    'compiler.ast.Sub': 1
+}
+
 
 class UnparseCompilerAst:
     """ Methods in this class recursively traverse an AST and
@@ -33,7 +41,7 @@ class UnparseCompilerAst:
     # object interface.
     #########################################################################
 
-    def __init__(self, tree, file = sys.stdout, single_line_functions=False):
+    def __init__(self, tree, file=sys.stdout, single_line_functions=False):
         """ Unparser(tree, file=sys.stdout) -> None.
 
             Print the source for tree to file.
@@ -52,10 +60,10 @@ class UnparseCompilerAst:
 
     ### format, output, and dispatch methods ################################
 
-    def _fill(self, text = ""):
+    def _fill(self, text=""):
         "Indent a piece of text, according to the current indentation level"
         if self._do_indent:
-            self._write("\n"+"    "*self._indent + text)
+            self._write("\n" + "    " * self._indent + text)
         else:
             self._write(text)
 
@@ -78,11 +86,10 @@ class UnparseCompilerAst:
             for t in tree:
                 self._dispatch(t)
             return
-        meth = getattr(self, "_"+tree.__class__.__name__)
+        meth = getattr(self, "_" + tree.__class__.__name__)
         if tree.__class__.__name__ == 'NoneType' and not self._do_indent:
             return
         meth(tree)
-
 
     #########################################################################
     # compiler.ast unparsing methods.
@@ -98,7 +105,7 @@ class UnparseCompilerAst:
         self._write(" (")
         for i, node in enumerate(t.nodes):
             self._dispatch(node)
-            if i != len(t.nodes)-1:
+            if i != len(t.nodes) - 1:
                 self._write(") and (")
         self._write(")")
 
@@ -106,7 +113,7 @@ class UnparseCompilerAst:
         """ Handle assigning an attribute of an object
         """
         self._dispatch(t.expr)
-        self._write('.'+t.attrname)
+        self._write('.' + t.attrname)
 
     def _Assign(self, t):
         """ Expression Assignment such as "a = 1".
@@ -148,7 +155,7 @@ class UnparseCompilerAst:
 
         self._fill()
         self._dispatch(t.node)
-        self._write(' '+t.op+' ')
+        self._write(' ' + t.op + ' ')
         self._dispatch(t.expr)
         if not self._do_indent:
             self._write(';')
@@ -161,7 +168,7 @@ class UnparseCompilerAst:
             self._write("(")
             self._dispatch(node)
             self._write(")")
-            if i != len(t.nodes)-1:
+            if i != len(t.nodes) - 1:
                 self._write(" & ")
 
     def _Bitor(self, t):
@@ -172,7 +179,7 @@ class UnparseCompilerAst:
             self._write("(")
             self._dispatch(node)
             self._write(")")
-            if i != len(t.nodes)-1:
+            if i != len(t.nodes) - 1:
                 self._write(" | ")
 
     def _Break(self, t):
@@ -222,11 +229,11 @@ class UnparseCompilerAst:
 
     def _Dict(self, t):
         self._write("{")
-        for  i, (k, v) in enumerate(t.items):
+        for i, (k, v) in enumerate(t.items):
             self._dispatch(k)
             self._write(": ")
             self._dispatch(v)
-            if i < len(t.items)-1:
+            if i < len(t.items) - 1:
                 self._write(", ")
         self._write("}")
 
@@ -267,12 +274,12 @@ class UnparseCompilerAst:
         self._fill("from ")
         self._write(t.modname)
         self._write(" import ")
-        for i, (name,asname) in enumerate(t.names):
+        for i, (name, asname) in enumerate(t.names):
             if i != 0:
                 self._write(", ")
             self._write(name)
             if asname is not None:
-                self._write(" as "+asname)
+                self._write(" as " + asname)
 
     def _Function(self, t):
         """ Handle function definitions
@@ -280,14 +287,15 @@ class UnparseCompilerAst:
         if t.decorators is not None:
             self._fill("@")
             self._dispatch(t.decorators)
-        self._fill("def "+t.name + "(")
-        defaults = [None] * (len(t.argnames) - len(t.defaults)) + list(t.defaults)
+        self._fill("def " + t.name + "(")
+        defaults = [None] * (len(t.argnames) - len(t.defaults)
+                             ) + list(t.defaults)
         for i, arg in enumerate(zip(t.argnames, defaults)):
             self._write(arg[0])
             if arg[1] is not None:
                 self._write('=')
                 self._dispatch(arg[1])
-            if i < len(t.argnames)-1:
+            if i < len(t.argnames) - 1:
                 self._write(', ')
         self._write(")")
         if self._single_func:
@@ -331,12 +339,12 @@ class UnparseCompilerAst:
         else:
             self._dispatch(t.expr)
 
-        self._write('.'+t.attrname)
+        self._write('.' + t.attrname)
 
     def _If(self, t):
         self._fill()
 
-        for i, (compare,code) in enumerate(t.tests):
+        for i, (compare, code) in enumerate(t.tests):
             if i == 0:
                 self._write("if ")
             else:
@@ -371,12 +379,12 @@ class UnparseCompilerAst:
         """
         self._fill("import ")
 
-        for i, (name,asname) in enumerate(t.names):
+        for i, (name, asname) in enumerate(t.names):
             if i != 0:
                 self._write(", ")
             self._write(name)
             if asname is not None:
-                self._write(" as "+asname)
+                self._write(" as " + asname)
 
     def _Keyword(self, t):
         """ Keyword value assignment within function calls and definitions.
@@ -387,9 +395,9 @@ class UnparseCompilerAst:
 
     def _List(self, t):
         self._write("[")
-        for  i,node in enumerate(t.nodes):
+        for i, node in enumerate(t.nodes):
             self._dispatch(node)
-            if i < len(t.nodes)-1:
+            if i < len(t.nodes) - 1:
                 self._write(", ")
         self._write("]")
 
@@ -437,7 +445,7 @@ class UnparseCompilerAst:
         self._write(" (")
         for i, node in enumerate(t.nodes):
             self._dispatch(node)
-            if i != len(t.nodes)-1:
+            if i != len(t.nodes) - 1:
                 self._write(") or (")
         self._write(")")
 
@@ -463,7 +471,7 @@ class UnparseCompilerAst:
         self._fill("return ")
         if t.value:
             if isinstance(t.value, Tuple):
-                text = ', '.join([ name.name for name in t.value.asList() ])
+                text = ', '.join([name.name for name in t.value.asList()])
                 self._write(text)
             else:
                 self._dispatch(t.value)
@@ -573,8 +581,8 @@ class UnparseCompilerAst:
         # Check if parenthesis are needed on left side and then dispatch
         has_paren = False
         left_class = str(t.left.__class__)
-        if (left_class in op_precedence.keys() and
-            op_precedence[left_class] < op_precedence[str(t.__class__)]):
+        if (left_class in list(op_precedence.keys()) and
+                op_precedence[left_class] < op_precedence[str(t.__class__)]):
             has_paren = True
         if has_paren:
             self._write('(')
@@ -586,8 +594,8 @@ class UnparseCompilerAst:
         # Check if parenthesis are needed on the right side and then dispatch
         has_paren = False
         right_class = str(t.right.__class__)
-        if (right_class in op_precedence.keys() and
-            op_precedence[right_class] < op_precedence[str(t.__class__)]):
+        if (right_class in list(op_precedence.keys()) and
+                op_precedence[right_class] < op_precedence[str(t.__class__)]):
             has_paren = True
         if has_paren:
             self._write('(')
@@ -613,317 +621,314 @@ class UnparseCompilerAst:
     # modify some of the methods below so that they work for compiler.ast.
     #########################################################################
 
-#    # stmt
-#    def _Expr(self, tree):
-#        self._fill()
-#        self._dispatch(tree.value)
-#
-#    def _Import(self, t):
-#        self._fill("import ")
-#        first = True
-#        for a in t.names:
-#            if first:
-#                first = False
-#            else:
-#                self._write(", ")
-#            self._write(a.name)
-#            if a.asname:
-#                self._write(" as "+a.asname)
-#
-##    def _ImportFrom(self, t):
-##        self._fill("from ")
-##        self._write(t.module)
-##        self._write(" import ")
-##        for i, a in enumerate(t.names):
-##            if i == 0:
-##                self._write(", ")
-##            self._write(a.name)
-##            if a.asname:
-##                self._write(" as "+a.asname)
-##        # XXX(jpe) what is level for?
-##
-#
-#    def _Break(self, t):
-#        self._fill("break")
-#
-#    def _Continue(self, t):
-#        self._fill("continue")
-#
-#    def _Delete(self, t):
-#        self._fill("del ")
-#        self._dispatch(t.targets)
-#
-#    def _Assert(self, t):
-#        self._fill("assert ")
-#        self._dispatch(t.test)
-#        if t.msg:
-#            self._write(", ")
-#            self._dispatch(t.msg)
-#
-#    def _Exec(self, t):
-#        self._fill("exec ")
-#        self._dispatch(t.body)
-#        if t.globals:
-#            self._write(" in ")
-#            self._dispatch(t.globals)
-#        if t.locals:
-#            self._write(", ")
-#            self._dispatch(t.locals)
-#
-#    def _Print(self, t):
-#        self._fill("print ")
-#        do_comma = False
-#        if t.dest:
-#            self._write(">>")
-#            self._dispatch(t.dest)
-#            do_comma = True
-#        for e in t.values:
-#            if do_comma:self._write(", ")
-#            else:do_comma=True
-#            self._dispatch(e)
-#        if not t.nl:
-#            self._write(",")
-#
-#    def _Global(self, t):
-#        self._fill("global")
-#        for i, n in enumerate(t.names):
-#            if i != 0:
-#                self._write(",")
-#            self._write(" " + n)
-#
-#    def _Yield(self, t):
-#        self._fill("yield")
-#        if t.value:
-#            self._write(" (")
-#            self._dispatch(t.value)
-#            self._write(")")
-#
-#    def _Raise(self, t):
-#        self._fill('raise ')
-#        if t.type:
-#            self._dispatch(t.type)
-#        if t.inst:
-#            self._write(", ")
-#            self._dispatch(t.inst)
-#        if t.tback:
-#            self._write(", ")
-#            self._dispatch(t.tback)
-#
-#
-#    def _TryFinally(self, t):
-#        self._fill("try")
-#        self._enter()
-#        self._dispatch(t.body)
-#        self._leave()
-#
-#        self._fill("finally")
-#        self._enter()
-#        self._dispatch(t.finalbody)
-#        self._leave()
-#
-#    def _excepthandler(self, t):
-#        self._fill("except ")
-#        if t.type:
-#            self._dispatch(t.type)
-#        if t.name:
-#            self._write(", ")
-#            self._dispatch(t.name)
-#        self._enter()
-#        self._dispatch(t.body)
-#        self._leave()
-#
-#    def _ClassDef(self, t):
-#        self._write("\n")
-#        self._fill("class "+t.name)
-#        if t.bases:
-#            self._write("(")
-#            for a in t.bases:
-#                self._dispatch(a)
-#                self._write(", ")
-#            self._write(")")
-#        self._enter()
-#        self._dispatch(t.body)
-#        self._leave()
-#
-#    def _FunctionDef(self, t):
-#        self._write("\n")
-#        for deco in t.decorators:
-#            self._fill("@")
-#            self._dispatch(deco)
-#        self._fill("def "+t.name + "(")
-#        self._dispatch(t.args)
-#        self._write(")")
-#        self._enter()
-#        self._dispatch(t.body)
-#        self._leave()
-#
-#    def _For(self, t):
-#        self._fill("for ")
-#        self._dispatch(t.target)
-#        self._write(" in ")
-#        self._dispatch(t.iter)
-#        self._enter()
-#        self._dispatch(t.body)
-#        self._leave()
-#        if t.orelse:
-#            self._fill("else")
-#            self._enter()
-#            self._dispatch(t.orelse)
-#            self._leave
-#
-#    def _While(self, t):
-#        self._fill("while ")
-#        self._dispatch(t.test)
-#        self._enter()
-#        self._dispatch(t.body)
-#        self._leave()
-#        if t.orelse:
-#            self._fill("else")
-#            self._enter()
-#            self._dispatch(t.orelse)
-#            self._leave
-#
-#    # expr
-#    def _Str(self, tree):
-#        self._write(repr(tree.s))
-##
-#    def _Repr(self, t):
-#        self._write("`")
-#        self._dispatch(t.value)
-#        self._write("`")
-#
-#    def _Num(self, t):
-#        self._write(repr(t.n))
-#
-#    def _ListComp(self, t):
-#        self._write("[")
-#        self._dispatch(t.elt)
-#        for gen in t.generators:
-#            self._dispatch(gen)
-#        self._write("]")
-#
-#    def _GeneratorExp(self, t):
-#        self._write("(")
-#        self._dispatch(t.elt)
-#        for gen in t.generators:
-#            self._dispatch(gen)
-#        self._write(")")
-#
-#    def _comprehension(self, t):
-#        self._write(" for ")
-#        self._dispatch(t.target)
-#        self._write(" in ")
-#        self._dispatch(t.iter)
-#        for if_clause in t.ifs:
-#            self._write(" if ")
-#            self._dispatch(if_clause)
-#
-#    def _IfExp(self, t):
-#        self._dispatch(t.body)
-#        self._write(" if ")
-#        self._dispatch(t.test)
-#        if t.orelse:
-#            self._write(" else ")
-#            self._dispatch(t.orelse)
-#
-#    unop = {"Invert":"~", "Not": "not", "UAdd":"+", "USub":"-"}
-#    def _UnaryOp(self, t):
-#        self._write(self.unop[t.op.__class__.__name__])
-#        self._write("(")
-#        self._dispatch(t.operand)
-#        self._write(")")
-#
-#    binop = { "Add":"+", "Sub":"-", "Mult":"*", "Div":"/", "Mod":"%",
-#                    "LShift":">>", "RShift":"<<", "BitOr":"|", "BitXor":"^", "BitAnd":"&",
-#                    "FloorDiv":"//", "Pow": "**"}
-#    def _BinOp(self, t):
-#        self._write("(")
-#        self._dispatch(t.left)
-#        self._write(")" + self.binop[t.op.__class__.__name__] + "(")
-#        self._dispatch(t.right)
-#        self._write(")")
-#
-#    boolops = {_ast.And: 'and', _ast.Or: 'or'}
-#    def _BoolOp(self, t):
-#        self._write("(")
-#        self._dispatch(t.values[0])
-#        for v in t.values[1:]:
-#            self._write(" %s " % self.boolops[t.op.__class__])
-#            self._dispatch(v)
-#        self._write(")")
-#
-#    def _Attribute(self,t):
-#        self._dispatch(t.value)
-#        self._write(".")
-#        self._write(t.attr)
-#
-##    def _Call(self, t):
-##        self._dispatch(t.func)
-##        self._write("(")
-##        comma = False
-##        for e in t.args:
-##            if comma: self._write(", ")
-##            else: comma = True
-##            self._dispatch(e)
-##        for e in t.keywords:
-##            if comma: self._write(", ")
-##            else: comma = True
-##            self._dispatch(e)
-##        if t.starargs:
-##            if comma: self._write(", ")
-##            else: comma = True
-##            self._write("*")
-##            self._dispatch(t.starargs)
-##        if t.kwargs:
-##            if comma: self._write(", ")
-##            else: comma = True
-##            self._write("**")
-##            self._dispatch(t.kwargs)
-##        self._write(")")
-#
-#    # slice
-#    def _Index(self, t):
-#        self._dispatch(t.value)
-#
-#    def _ExtSlice(self, t):
-#        for i, d in enumerate(t.dims):
-#            if i != 0:
-#                self._write(': ')
-#            self._dispatch(d)
-#
-#    # others
-#    def _arguments(self, t):
-#        first = True
-#        nonDef = len(t.args)-len(t.defaults)
-#        for a in t.args[0:nonDef]:
-#            if first:first = False
-#            else: self._write(", ")
-#            self._dispatch(a)
-#        for a,d in zip(t.args[nonDef:], t.defaults):
-#            if first:first = False
-#            else: self._write(", ")
-#            self._dispatch(a),
-#            self._write("=")
-#            self._dispatch(d)
-#        if t.vararg:
-#            if first:first = False
-#            else: self._write(", ")
-#            self._write("*"+t.vararg)
-#        if t.kwarg:
-#            if first:first = False
-#            else: self._write(", ")
-#            self._write("**"+t.kwarg)
-#
-##    def _keyword(self, t):
-##        self._write(t.arg)
-##        self._write("=")
-##        self._dispatch(t.value)
-#
-#    def _Lambda(self, t):
-#        self._write("lambda ")
-#        self._dispatch(t.args)
-#        self._write(": ")
-#        self._dispatch(t.body)
-
-
-
+    #    # stmt
+    #    def _Expr(self, tree):
+    #        self._fill()
+    #        self._dispatch(tree.value)
+    #
+    #    def _Import(self, t):
+    #        self._fill("import ")
+    #        first = True
+    #        for a in t.names:
+    #            if first:
+    #                first = False
+    #            else:
+    #                self._write(", ")
+    #            self._write(a.name)
+    #            if a.asname:
+    #                self._write(" as "+a.asname)
+    #
+    ##    def _ImportFrom(self, t):
+    ##        self._fill("from ")
+    ##        self._write(t.module)
+    ##        self._write(" import ")
+    ##        for i, a in enumerate(t.names):
+    ##            if i == 0:
+    ##                self._write(", ")
+    ##            self._write(a.name)
+    ##            if a.asname:
+    ##                self._write(" as "+a.asname)
+    ##        # XXX(jpe) what is level for?
+    ##
+    #
+    #    def _Break(self, t):
+    #        self._fill("break")
+    #
+    #    def _Continue(self, t):
+    #        self._fill("continue")
+    #
+    #    def _Delete(self, t):
+    #        self._fill("del ")
+    #        self._dispatch(t.targets)
+    #
+    #    def _Assert(self, t):
+    #        self._fill("assert ")
+    #        self._dispatch(t.test)
+    #        if t.msg:
+    #            self._write(", ")
+    #            self._dispatch(t.msg)
+    #
+    #    def _Exec(self, t):
+    #        self._fill("exec ")
+    #        self._dispatch(t.body)
+    #        if t.globals:
+    #            self._write(" in ")
+    #            self._dispatch(t.globals)
+    #        if t.locals:
+    #            self._write(", ")
+    #            self._dispatch(t.locals)
+    #
+    #    def _Print(self, t):
+    #        self._fill("print ")
+    #        do_comma = False
+    #        if t.dest:
+    #            self._write(">>")
+    #            self._dispatch(t.dest)
+    #            do_comma = True
+    #        for e in t.values:
+    #            if do_comma:self._write(", ")
+    #            else:do_comma=True
+    #            self._dispatch(e)
+    #        if not t.nl:
+    #            self._write(",")
+    #
+    #    def _Global(self, t):
+    #        self._fill("global")
+    #        for i, n in enumerate(t.names):
+    #            if i != 0:
+    #                self._write(",")
+    #            self._write(" " + n)
+    #
+    #    def _Yield(self, t):
+    #        self._fill("yield")
+    #        if t.value:
+    #            self._write(" (")
+    #            self._dispatch(t.value)
+    #            self._write(")")
+    #
+    #    def _Raise(self, t):
+    #        self._fill('raise ')
+    #        if t.type:
+    #            self._dispatch(t.type)
+    #        if t.inst:
+    #            self._write(", ")
+    #            self._dispatch(t.inst)
+    #        if t.tback:
+    #            self._write(", ")
+    #            self._dispatch(t.tback)
+    #
+    #
+    #    def _TryFinally(self, t):
+    #        self._fill("try")
+    #        self._enter()
+    #        self._dispatch(t.body)
+    #        self._leave()
+    #
+    #        self._fill("finally")
+    #        self._enter()
+    #        self._dispatch(t.finalbody)
+    #        self._leave()
+    #
+    #    def _excepthandler(self, t):
+    #        self._fill("except ")
+    #        if t.type:
+    #            self._dispatch(t.type)
+    #        if t.name:
+    #            self._write(", ")
+    #            self._dispatch(t.name)
+    #        self._enter()
+    #        self._dispatch(t.body)
+    #        self._leave()
+    #
+    #    def _ClassDef(self, t):
+    #        self._write("\n")
+    #        self._fill("class "+t.name)
+    #        if t.bases:
+    #            self._write("(")
+    #            for a in t.bases:
+    #                self._dispatch(a)
+    #                self._write(", ")
+    #            self._write(")")
+    #        self._enter()
+    #        self._dispatch(t.body)
+    #        self._leave()
+    #
+    #    def _FunctionDef(self, t):
+    #        self._write("\n")
+    #        for deco in t.decorators:
+    #            self._fill("@")
+    #            self._dispatch(deco)
+    #        self._fill("def "+t.name + "(")
+    #        self._dispatch(t.args)
+    #        self._write(")")
+    #        self._enter()
+    #        self._dispatch(t.body)
+    #        self._leave()
+    #
+    #    def _For(self, t):
+    #        self._fill("for ")
+    #        self._dispatch(t.target)
+    #        self._write(" in ")
+    #        self._dispatch(t.iter)
+    #        self._enter()
+    #        self._dispatch(t.body)
+    #        self._leave()
+    #        if t.orelse:
+    #            self._fill("else")
+    #            self._enter()
+    #            self._dispatch(t.orelse)
+    #            self._leave
+    #
+    #    def _While(self, t):
+    #        self._fill("while ")
+    #        self._dispatch(t.test)
+    #        self._enter()
+    #        self._dispatch(t.body)
+    #        self._leave()
+    #        if t.orelse:
+    #            self._fill("else")
+    #            self._enter()
+    #            self._dispatch(t.orelse)
+    #            self._leave
+    #
+    #    # expr
+    #    def _Str(self, tree):
+    #        self._write(repr(tree.s))
+    ##
+    #    def _Repr(self, t):
+    #        self._write("`")
+    #        self._dispatch(t.value)
+    #        self._write("`")
+    #
+    #    def _Num(self, t):
+    #        self._write(repr(t.n))
+    #
+    #    def _ListComp(self, t):
+    #        self._write("[")
+    #        self._dispatch(t.elt)
+    #        for gen in t.generators:
+    #            self._dispatch(gen)
+    #        self._write("]")
+    #
+    #    def _GeneratorExp(self, t):
+    #        self._write("(")
+    #        self._dispatch(t.elt)
+    #        for gen in t.generators:
+    #            self._dispatch(gen)
+    #        self._write(")")
+    #
+    #    def _comprehension(self, t):
+    #        self._write(" for ")
+    #        self._dispatch(t.target)
+    #        self._write(" in ")
+    #        self._dispatch(t.iter)
+    #        for if_clause in t.ifs:
+    #            self._write(" if ")
+    #            self._dispatch(if_clause)
+    #
+    #    def _IfExp(self, t):
+    #        self._dispatch(t.body)
+    #        self._write(" if ")
+    #        self._dispatch(t.test)
+    #        if t.orelse:
+    #            self._write(" else ")
+    #            self._dispatch(t.orelse)
+    #
+    #    unop = {"Invert":"~", "Not": "not", "UAdd":"+", "USub":"-"}
+    #    def _UnaryOp(self, t):
+    #        self._write(self.unop[t.op.__class__.__name__])
+    #        self._write("(")
+    #        self._dispatch(t.operand)
+    #        self._write(")")
+    #
+    #    binop = { "Add":"+", "Sub":"-", "Mult":"*", "Div":"/", "Mod":"%",
+    #                    "LShift":">>", "RShift":"<<", "BitOr":"|", "BitXor":"^", "BitAnd":"&",
+    #                    "FloorDiv":"//", "Pow": "**"}
+    #    def _BinOp(self, t):
+    #        self._write("(")
+    #        self._dispatch(t.left)
+    #        self._write(")" + self.binop[t.op.__class__.__name__] + "(")
+    #        self._dispatch(t.right)
+    #        self._write(")")
+    #
+    #    boolops = {_ast.And: 'and', _ast.Or: 'or'}
+    #    def _BoolOp(self, t):
+    #        self._write("(")
+    #        self._dispatch(t.values[0])
+    #        for v in t.values[1:]:
+    #            self._write(" %s " % self.boolops[t.op.__class__])
+    #            self._dispatch(v)
+    #        self._write(")")
+    #
+    #    def _Attribute(self,t):
+    #        self._dispatch(t.value)
+    #        self._write(".")
+    #        self._write(t.attr)
+    #
+    ##    def _Call(self, t):
+    ##        self._dispatch(t.func)
+    ##        self._write("(")
+    ##        comma = False
+    ##        for e in t.args:
+    ##            if comma: self._write(", ")
+    ##            else: comma = True
+    ##            self._dispatch(e)
+    ##        for e in t.keywords:
+    ##            if comma: self._write(", ")
+    ##            else: comma = True
+    ##            self._dispatch(e)
+    ##        if t.starargs:
+    ##            if comma: self._write(", ")
+    ##            else: comma = True
+    ##            self._write("*")
+    ##            self._dispatch(t.starargs)
+    ##        if t.kwargs:
+    ##            if comma: self._write(", ")
+    ##            else: comma = True
+    ##            self._write("**")
+    ##            self._dispatch(t.kwargs)
+    ##        self._write(")")
+    #
+    #    # slice
+    #    def _Index(self, t):
+    #        self._dispatch(t.value)
+    #
+    #    def _ExtSlice(self, t):
+    #        for i, d in enumerate(t.dims):
+    #            if i != 0:
+    #                self._write(': ')
+    #            self._dispatch(d)
+    #
+    #    # others
+    #    def _arguments(self, t):
+    #        first = True
+    #        nonDef = len(t.args)-len(t.defaults)
+    #        for a in t.args[0:nonDef]:
+    #            if first:first = False
+    #            else: self._write(", ")
+    #            self._dispatch(a)
+    #        for a,d in zip(t.args[nonDef:], t.defaults):
+    #            if first:first = False
+    #            else: self._write(", ")
+    #            self._dispatch(a),
+    #            self._write("=")
+    #            self._dispatch(d)
+    #        if t.vararg:
+    #            if first:first = False
+    #            else: self._write(", ")
+    #            self._write("*"+t.vararg)
+    #        if t.kwarg:
+    #            if first:first = False
+    #            else: self._write(", ")
+    #            self._write("**"+t.kwarg)
+    #
+    ##    def _keyword(self, t):
+    ##        self._write(t.arg)
+    ##        self._write("=")
+    ##        self._dispatch(t.value)
+    #
+    #    def _Lambda(self, t):
+    #        self._write("lambda ")
+    #        self._dispatch(t.args)
+    #        self._write(": ")
+    #        self._dispatch(t.body)

@@ -108,7 +108,7 @@ class Events2TestCase(unittest.TestCase):
         context.on_trait_change(self.event_listener, 'items_modified')
         context.defer_events = True
         context['a'] = 4
-        context['b'] = numpy.array((1,2,3))
+        context['b'] = numpy.array((1, 2, 3))
         context.defer_events = False
 
         self.assertEqual(self.event_count, 1)
@@ -121,4 +121,3 @@ class Events2TestCase(unittest.TestCase):
 
         # we expect one event from data context, one from multi context
         self.assertEqual(self.event_count, 3)
-

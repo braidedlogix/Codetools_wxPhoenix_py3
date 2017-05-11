@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 # Global imports
 from copy import copy
@@ -51,14 +50,15 @@ class FormulaExecutingContext(DataContext):
     # The expressions to execute
     _expressions = Dict
 
-    _globals_context = Instance(DataContext) # May want to change to an interface spec
+    _globals_context = Instance(
+        DataContext)  # May want to change to an interface spec
     # Whether we are currently executing on the DataContext
     _executing = Bool(False)
 
     # Dict interface
     def __setitem__(self, key, value):
         # FIXME this heuristic of looking for an = is somewhat brittle, but will work for our application
-        if isinstance(value, basestring) and '=' in value:
+        if isinstance(value, str) and '=' in value:
             #This is a formula
             self._expressions[key] = value.split('=')[1]
             self._regenerate_expression_block()
@@ -71,14 +71,17 @@ class FormulaExecutingContext(DataContext):
     def __getitem__(self, key):
         try:
             if key in self._expressions:
-                return repr(self.data_context[key]) + '=' + self._expressions[key]
+                return repr(self.data_context[key]) + '=' + self._expressions[
+                    key]
             else:
                 return self.data_context[key]
         except:
-            import pdb; pdb.set_trace()
+            import pdb
+            pdb.set_trace()
 
     def keys(self):
-        return self.data_context.keys()
+        return list(self.data_context.keys())
+
     # FIXME implement __delitem__
 
     # Public interface
@@ -93,10 +96,10 @@ class FormulaExecutingContext(DataContext):
         if self.external_block is None:
             self._external_code_changed(self.external_code)
         else:
-            self.external_block = Block([self.external_block, Block(self.external_code)])
+            self.external_block = Block(
+                [self.external_block, Block(self.external_code)])
 
         self._regenerate_composite_block()
-
 
     def execute_block_if_auto(self, inputs=(), outputs=()):
         if self.auto_execute:
@@ -118,33 +121,38 @@ class FormulaExecutingContext(DataContext):
         with self.data_context.deferred_events():
             if self._composite_block is None:
                 self._regenerate_composite_block()
-            if inputs !=() or outputs != ():
-                block = self._composite_block.restrict(inputs=inputs, outputs=outputs)
+            if inputs != () or outputs != ():
+                block = self._composite_block.restrict(
+                    inputs=inputs, outputs=outputs)
             else:
                 block = self._composite_block
 
         if self.swallow_exceptions:
             with self.data_context.deferred_events():
                 try:
-                    block.execute(self.data_context, self._globals_context,
-                            continue_on_errors=self.continue_on_errors)
+                    block.execute(
+                        self.data_context,
+                        self._globals_context,
+                        continue_on_errors=self.continue_on_errors)
                 except Exception:
                     pass
 
         else:
             with self.data_context.deferred_events():
-                block.execute(self.data_context, self._globals_context,
-                              continue_on_errors=self.continue_on_errors)
+                block.execute(
+                    self.data_context,
+                    self._globals_context,
+                    continue_on_errors=self.continue_on_errors)
 
         self._executing = False
 
-        execution_needed=False
+        execution_needed = False
         return
 
     def copy(self):
         """Make a deep copy of this FormulaExecutingContext.  Useful for plot shadowing."""
         new_datacontext = DataContext()
-        for key in self.data_context.keys():
+        for key in list(self.data_context.keys()):
             try:
                 new_datacontext[key] = copy(self.data_context[key])
             except:
@@ -153,11 +161,12 @@ class FormulaExecutingContext(DataContext):
         # turn off auto-firing of events during construction, then turn it back on
         # after everything is set up
 
-        new = FormulaExecutingContext(data_context=new_datacontext,
-                                      external_block=self.external_block,
-                                      execution_needed=self.execution_needed,
-                                      auto_execute=False,
-                                      _expressions=self._expressions)
+        new = FormulaExecutingContext(
+            data_context=new_datacontext,
+            external_block=self.external_block,
+            execution_needed=self.execution_needed,
+            auto_execute=False,
+            _expressions=self._expressions)
 
         new._regenerate_expression_block()
         new._regenerate_composite_block()
@@ -166,17 +175,13 @@ class FormulaExecutingContext(DataContext):
 
         return new
 
-
-
-
     # Trait listeners
     def _data_context_changed(self):
-        self.execution_needed=True
+        self.execution_needed = True
 
     def _external_code_changed(self, new):
         self.external_block = Block(new)
         return
-
 
     def _external_block_changed(self, new):
         self._regenerate_composite_block()
@@ -187,18 +192,23 @@ class FormulaExecutingContext(DataContext):
         self.execute_block_if_auto()
 
     def _regenerate_composite_block(self):
-        self._composite_block = Block((self.external_block, self._expression_block))
+        self._composite_block = Block(
+            (self.external_block, self._expression_block))
         return
 
     def _regenerate_expression_block(self):
-        exprs = ['%s = %s' % (var, expr) for var, expr in self._expressions.items()]
+        exprs = [
+            '%s = %s' % (var, expr)
+            for var, expr in list(self._expressions.items())
+        ]
         expression_code = '\n'.join(exprs) + '\n'
         self._expression_block = Block(expression_code)
 
     @on_trait_change('data_context:items_modified')
     def _data_context_items_modified(self, event):
         if not self._executing and isinstance(event, ItemsModified):
-            inputs=set(self._composite_block.inputs).intersection(set(event.added + event.removed + event.modified))
+            inputs = set(self._composite_block.inputs).intersection(
+                set(event.added + event.removed + event.modified))
             if len(inputs) == 0:
                 return
             self.execute_block_if_auto(inputs=inputs)
@@ -209,6 +219,3 @@ class FormulaExecutingContext(DataContext):
 
     def __expression_block_default(self):
         return Block('')
-
-
-

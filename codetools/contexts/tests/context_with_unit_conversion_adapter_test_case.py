@@ -22,6 +22,7 @@ from codetools.contexts.adapter.unit_conversion_adapter import UnitConversionAda
 # Test imports
 from codetools.contexts.tests.data_context_test_case import DataContextTestCase
 
+
 class ContextWithUnitConversionAdapterLogTestCase(DataContextTestCase):
     """ Test whether context still works with an adapter attached.
 
@@ -35,10 +36,10 @@ class ContextWithUnitConversionAdapterLogTestCase(DataContextTestCase):
     def context_factory(self):
         """ Return the type of context we are testing.
         """
-        data_context=DataContext()
+        data_context = DataContext()
         context = AdaptedDataContext(context=data_context)
         name = self.key_name()
-        getitem_units = {name:meters/second}
+        getitem_units = {name: meters / second}
         adapter = UnitConversionAdapter(getitem_units=getitem_units)
         context.push_adapter(adapter)
         return context
@@ -49,15 +50,15 @@ class ContextWithUnitConversionAdapterLogTestCase(DataContextTestCase):
     def matched_input_output_pair(self):
         """ Return values for testing dictionary get/set, etc.
         """
-        input = UnitArray((1,2,3),units=meters/second)
-        output = UnitArray((1,2,3),units=meters/second)
+        input = UnitArray((1, 2, 3), units=meters / second)
+        output = UnitArray((1, 2, 3), units=meters / second)
         return input, output
 
     def unmatched_pair(self):
         """ Return values for testing dictionary get/set, etc.
         """
-        input = UnitArray((1,2,3),units=meters/second)
-        output = UnitArray((4,5,6),units=meters/second)
+        input = UnitArray((1, 2, 3), units=meters / second)
+        output = UnitArray((4, 5, 6), units=meters / second)
         return input, output
 
     def _simple_eval_works(self, context, key_name, input, output):
@@ -69,7 +70,7 @@ class ContextWithUnitConversionAdapterLogTestCase(DataContextTestCase):
         context[key_name] = input
         expr = '%s + %s' % (key_name, key_name)
         result = eval(expr, globals(), context)
-        self.failUnlessEqual(result, context[key_name]+context[key_name])
+        self.assertEqual(result, context[key_name] + context[key_name])
 
 
 class UnitConversionContextAdapterTestCase(unittest.TestCase):
@@ -90,10 +91,10 @@ class UnitConversionContextAdapterTestCase(unittest.TestCase):
     def test_getitem_converts_correctly(self):
         """ Does getitem convert units correctly?
         """
-        getitem_units = {'depth':feet}
+        getitem_units = {'depth': feet}
         adapter = UnitConversionAdapter(getitem_units=getitem_units)
 
-        old_log = UnitArray((1,2,3),units=meters)
+        old_log = UnitArray((1, 2, 3), units=meters)
 
         self.context['depth'] = old_log
         self.context.push_adapter(adapter)
@@ -101,10 +102,10 @@ class UnitConversionContextAdapterTestCase(unittest.TestCase):
         new_log = self.context['depth']
 
         # Did the values get converted correctly?
-        self.assert_(all(new_log==old_log.as_units(feet)))
+        self.assertTrue(all(new_log == old_log.as_units(feet)))
 
         # Are the units assigned correctly?
-        self.assert_(new_log.units==feet)
+        self.assertTrue(new_log.units == feet)
 
         return
 
@@ -112,8 +113,8 @@ class UnitConversionContextAdapterTestCase(unittest.TestCase):
         """ Does setitem convert units correctly?
         """
 
-        old_log = UnitArray((1,2,3),units=meters)
-        getitem_units = {'depth':feet}
+        old_log = UnitArray((1, 2, 3), units=meters)
+        getitem_units = {'depth': feet}
         adapter = UnitConversionAdapter(getitem_units=getitem_units)
 
         self.context.push_adapter(adapter)
@@ -125,10 +126,10 @@ class UnitConversionContextAdapterTestCase(unittest.TestCase):
         new_log = self.context['depth']
 
         # Did the values get converted correctly?
-        self.assert_(all(new_log==old_log.as_units(feet)))
+        self.assertTrue(all(new_log == old_log.as_units(feet)))
 
         # Are the units assigned correctly?
-        self.assert_(new_log.units==feet)
+        self.assertTrue(new_log.units == feet)
 
         return
 

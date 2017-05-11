@@ -5,11 +5,11 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 from compiler.ast import Module
 from compiler.transformer import Transformer
 import token
+
 
 class BlockTransformer(Transformer, object):
     'Specialize how code parses into ASTs for Blocks.'

@@ -10,8 +10,10 @@ from codetools.blocks.compiler_.api import parse
 # Extend base class compiler.ast.Node with deep equality
 import codetools.blocks.compiler_.ast.deep_equality
 
+
 class ParserDocTestCase(doctest_for_module(parser_)):
     pass
+
 
 class ParserTestCase(unittest.TestCase):
 
@@ -37,6 +39,7 @@ class ParserTestCase(unittest.TestCase):
         "Leave 'import foo' unchanged"
         code = 'a = 5; import foo, bar; print b'
         self.assertEqual(self._parse(code), parse(code))
+
 
 if __name__ == '__main__':
     unittest.main(argv=sys.argv)

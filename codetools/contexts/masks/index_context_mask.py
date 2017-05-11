@@ -1,8 +1,6 @@
 """ Class for masking geo_context with conditions on indices
 """
 
-from __future__ import absolute_import
-
 # Standard imports
 import numpy
 
@@ -12,6 +10,7 @@ from .context_mask import ContextMask
 #------------------------------------------------------------------------------
 #  IndexContextMask class
 #------------------------------------------------------------------------------
+
 
 class IndexContextMask(ContextMask):
     """ Class that is used for implementing ``with``-statement
@@ -36,7 +35,7 @@ class IndexContextMask(ContextMask):
         index = None
         if hasattr(context, 'get_index'):
             index = context.get_index()
-        elif context.has_key('index'):
+        elif 'index' in context:
             index = context['index']
 
         if index is not None and isinstance(index, numpy.ndarray):
@@ -58,14 +57,13 @@ if __name__ == '__main__':
     threshold = 3000.0
 
     # Usage
-    with IndexContextMask(g, 'index < threshold', {'vp': 1.5, 'vs':1e-5}):
+    with IndexContextMask(g, 'index < threshold', {'vp': 1.5, 'vs': 1e-5}):
         # These should be the new values.
-        print g['vp']
-        print g['vs']
+        print(g['vp'])
+        print(g['vs'])
 
     # These should be the original values.
-    print g['vp']
-    print g['vs']
-
+    print(g['vp'])
+    print(g['vs'])
 
 ### EOF ------------------------------------------------------------------------

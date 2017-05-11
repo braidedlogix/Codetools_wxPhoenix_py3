@@ -7,17 +7,14 @@
 #
 'Simple blocks of python code with dependency analysis.'
 
-from __future__ import absolute_import
-
 import compiler
 from compiler.ast import Module, Node, Stmt
 from traceback import format_exc
 import types
 from uuid import UUID, uuid4
 
-from traits.api import (Bool, Dict, Either, HasTraits,
-                                  Instance, List, Property, Str,
-                                  cached_property, Event)
+from traits.api import (Bool, Dict, Either, HasTraits, Instance, List,
+                        Property, Str, cached_property, Event)
 
 from ..util.dict import map_keys, map_values
 from ..util import graph
@@ -37,18 +34,23 @@ from .compiler_unparse import unparse
 #  - Expose functions that blocks use? (e.g. simply by name)
 ###############################################################################
 
+
 class CompositeException(Exception):
     """A container to consolidate multiple exceptions"""
+
     def __init__(self, exceptions):
         self.exceptions = exceptions
+
 
 class ShadowDict(dict):
     """ Dictionary whose writes (via indexing) are also saved in a shadow
     dictionary.
     """
+
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
-        self.shadow = {}  # only give shadow new objects, not those already in dict.
+        self.shadow = {
+        }  # only give shadow new objects, not those already in dict.
 
     def __setitem__(self, key, val):
         "write new objects into a shadow dict as well as the base dict"
@@ -59,7 +61,7 @@ class ShadowDict(dict):
 class Block(HasTraits):
     'A block of code that can be inspected, manipulated, and executed.'
 
-    __this = Instance('Block') # (traits.This scopes dynamically (#986))
+    __this = Instance('Block')  # (traits.This scopes dynamically (#986))
 
     ###########################################################################
     # Block traits
@@ -90,7 +92,7 @@ class Block(HasTraits):
     # The name of the file this block represents, if any. For blocks that
     # aren't files, the default value just shows repr(self). Annotates
     # tracebacks.
-    filename = Instance(basestring) # (Default 'None', allow 'None')
+    filename = Instance(str)  # (Default 'None', allow 'None')
 
     # A unique identifier
     uuid = Instance(UUID)
@@ -120,7 +122,6 @@ class Block(HasTraits):
     _code = Property(depends_on='_code_invalidated, ast')
     _code_invalidated = Event()
 
-
     # Flag to break call cycles when we update 'ast' and 'sub_blocks'
     _updating_structure = Bool(False)
 
@@ -148,7 +149,7 @@ class Block(HasTraits):
         # 'file' -> 'x'
         if file is not None:
             # Turn 'file' into a file object and move to 'x'
-            if isinstance(file, basestring):
+            if isinstance(file, str):
                 file = open(file)
             elif not is_file_object(file):
                 raise ValueError("Expected 'file' to be a file or string, "
@@ -163,7 +164,7 @@ class Block(HasTraits):
             x = x.read()
 
         # 'x' -> 'self.ast' or 'self.sub_blocks'
-        if isinstance(x, basestring):
+        if isinstance(x, str):
             # (BlockTransformer handles things like 'import *')
             self.ast = parse(x, mode='exec', transformer=BlockTransformer())
             self._stored_string = x
@@ -189,7 +190,8 @@ class Block(HasTraits):
             self.sub_blocks = sub_blocks
             self._tidy_ast()
         else:
-            raise ValueError('Expecting file, string, Node, or sequence. Got %r' % x)
+            raise ValueError(
+                'Expecting file, string, Node, or sequence. Got %r' % x)
 
         # prepare the inputs and outputs
         self._clear_cache_inputs_and_outputs()
@@ -225,12 +227,13 @@ class Block(HasTraits):
         version = state.pop('_Block_version', 0)
 
         if version < 1:
-            if state.has_key('inputs'):
-                 state['_inputs'] = state.pop('inputs')
-            if state.has_key('outputs'):
-                 state['_outputs'] = state.pop('outputs')
-            if state.has_key('conditional_outputs'):
-                 state['_conditional_outputs'] = state.pop('conditional_outputs')
+            if 'inputs' in state:
+                state['_inputs'] = state.pop('inputs')
+            if 'outputs' in state:
+                state['_outputs'] = state.pop('outputs')
+            if 'conditional_outputs' in state:
+                state['_conditional_outputs'] = state.pop(
+                    'conditional_outputs')
 
         super(Block, self).__setstate__(state)
 
@@ -244,21 +247,21 @@ class Block(HasTraits):
         return '%s(uuid=%s)' % (self.__class__.__name__, self.uuid)
 
     def __str__(self):
-        return repr(self) # TODO Unparse ast (2.5) (cf. #1167)
+        return repr(self)  # TODO Unparse ast (2.5) (cf. #1167)
 
     def _print_debug_graph(self, graph):
         """ Only to be used for debugging- prints each node of the graph
             with its immediate dependents following
         """
-        print "--------------------------------------"
-        for k in graph.keys():
+        print("--------------------------------------")
+        for k in list(graph.keys()):
             if isinstance(k, Block):
-                print k.ast
+                print(k.ast)
                 for dep in graph[k]:
                     if isinstance(dep, Block):
-                        print "    %s" % dep.ast
+                        print("    %s" % dep.ast)
                     else:
-                        print "    '%s'" % dep[0]
+                        print("    '%s'" % dep[0])
 
     ###########################################################################
     # Block public interface
@@ -278,8 +281,10 @@ class Block(HasTraits):
 
         return isinstance(self.ast, Stmt) and len(self.ast.nodes) == 0
 
-
-    def execute(self, local_context, global_context = {}, continue_on_errors=False):
+    def execute(self,
+                local_context,
+                global_context={},
+                continue_on_errors=False):
         """Execute the block in local_context, optionally specifying a global
         context.  If continue_on_errors is specified, continue executing code after
         an exception is thrown and throw the exceptions at the end of execution.
@@ -295,19 +300,19 @@ class Block(HasTraits):
                not continue_on_errors:
             if self.filename:
                 local_context['__file__'] = self.filename
-            exec self._code in global_context, local_context
+            exec(self._code, global_context, local_context)
         else:
             if continue_on_errors:
                 exceptions = []
                 for block in self.sub_blocks:
                     try:
                         block.execute(local_context, global_context)
-                    except Exception, e:
+                    except Exception as e:
                         # save the current traceback
                         e.traceback = format_exc()
                         exceptions.append(e)
                 if exceptions:
-                    if len(exceptions)>1:
+                    if len(exceptions) > 1:
                         raise CompositeException(exceptions)
                     else:
                         raise exceptions[0]
@@ -317,7 +322,9 @@ class Block(HasTraits):
                     block.execute(local_context, global_context)
         return
 
-    def execute_impure(self, context, continue_on_errors=False,
+    def execute_impure(self,
+                       context,
+                       continue_on_errors=False,
                        clean_shadow=True):
         """
         Summary: Allows the execution of code blocks containing impure functions.
@@ -396,12 +403,10 @@ class Block(HasTraits):
         if clean_shadow:
             # Fixme: clean_shadow should probably remove a few more types,
             # but these are the obvious ones.
-            shadow = dict((name, value) for (name, value) in shadow.iteritems()
-                          if name[0] != '_' and
-                          type(value) not in (types.FunctionType,
-                                              types.ModuleType))
+            shadow = dict((name, value) for (name, value) in shadow.items()
+                          if name[0] != '_' and type(value) not in (
+                              types.FunctionType, types.ModuleType))
         return shadow
-
 
     def invalidate_cache(self):
         """ Someone modified the block's internal ast. This method provides and
@@ -451,9 +456,11 @@ class Block(HasTraits):
         if not (inputs or outputs):
             raise ValueError('Must provide inputs or outputs')
         if not inputs.issubset(self.inputs | self.outputs | self.fromimports):
-            raise ValueError('Unknown inputs: %s' % (inputs - self.inputs - self.outputs - self.fromimports))
+            raise ValueError('Unknown inputs: %s' % (
+                inputs - self.inputs - self.outputs - self.fromimports))
         if not outputs.issubset(self.all_outputs):
-            raise ValueError('Unknown outputs: %s' %(outputs-self.all_outputs))
+            raise ValueError('Unknown outputs: %s' %
+                             (outputs - self.all_outputs))
 
         # Validate the block to make sure it is safe for restriction
         if self.validate_for_restriction() is not None:
@@ -474,29 +481,33 @@ class Block(HasTraits):
         # We use the mock constructors `In` and `Out` to separate input and
         # output names in the dep graph in order to avoid cyclic graphs (in
         # case input and output names overlap)
-        in_, out = object(), object() # (singletons)
+        in_, out = object(), object()  # (singletons)
         In = lambda x: (x, in_)
         Out = lambda x: (x, out)
 
         def wrap_names(wrap):
             "Wrap names and leave everything else alone"
+
             def g(x):
-                if isinstance(x, basestring):
+                if isinstance(x, str):
                     return wrap(x)
                 else:
                     return x
+
             return g
 
         # Decorate input names with `In` and output names with `Out` so that
         # `g` isn't cyclic
-        g = map_keys(wrap_names(Out),
-                map_values(lambda l: map(wrap_names(In), l), self._dep_graph))
+        g = map_keys(
+            wrap_names(Out),
+            map_values(lambda l: list(map(wrap_names(In), l)),
+                       self._dep_graph))
 
         # Find the subgraph reachable from inputs, and then find its subgraph
         # reachable from outputs. (We could also flip the order.)
         if inputs:
             # look in the outputs for intermediate inputs
-            intermediates = map(Out, self.outputs.intersection(inputs))
+            intermediates = list(map(Out, self.outputs.intersection(inputs)))
             inputs = inputs - self.outputs.intersection(inputs)
 
             # Find the intermediate's block node and replace it
@@ -515,16 +526,16 @@ class Block(HasTraits):
                 # its possible someone tried to restrict an import,
                 # which is not in the graph
                 #fixme: uncommenting these breaks pruning intermediates, why is this here?
-#                if not g.has_key(pruned_block):
-#                    intermediates.remove(intermediate)
-#                    continue
+                #                if not g.has_key(pruned_block):
+                #                    intermediates.remove(intermediate)
+                #                    continue
 
                 # if intermediate is not removed, the resulting graph will
                 # be cyclic
                 g.pop(intermediate)
 
                 pure_output = True
-                for v in g.values():
+                for v in list(g.values()):
                     if pruned_block in v:
                         pure_output = False
                         v.remove(pruned_block)
@@ -535,20 +546,24 @@ class Block(HasTraits):
                     g[intermediate] = [Block("%s = %s" % \
                                         (intermediate[0], intermediate[0]))]
 
-            inputs = map(In, inputs) + intermediates
+            inputs = list(map(In, inputs)) + intermediates
 
             # if no inputs were valid, do not alter the graph
             if len(inputs) > 0:
-                g = graph.reverse(graph.reachable_graph(graph.reverse(g), inputs))
+                g = graph.reverse(
+                    graph.reachable_graph(graph.reverse(g), inputs))
         if outputs:
-            outputs = map(Out, outputs)
-            g = graph.reachable_graph(g, set(outputs).intersection(g.keys()))
+            outputs = list(map(Out, outputs))
+            g = graph.reachable_graph(
+                g, set(outputs).intersection(list(g.keys())))
 
         # Create a new block from the remaining sub-blocks (ordered imports
         # first, then input to output, ignoring the variables at the ends)
         # and give it our filename
-        remaining_sub_blocks = [node for node in reversed(graph.topological_sort(g))
-                       if isinstance(node, Block)]
+        remaining_sub_blocks = [
+            node for node in reversed(graph.topological_sort(g))
+            if isinstance(node, Block)
+        ]
 
         # trim out redundant imports which can occur if a restricted output is
         # one of the imports:
@@ -570,18 +585,19 @@ class Block(HasTraits):
 
         These lists determine the calling order for the function.
         """
-        if isinstance(outputs, basestring):
+        if isinstance(outputs, str):
             outputs = [outputs]
-        if isinstance(inputs, basestring):
+        if isinstance(inputs, str):
             inputs = [inputs]
         block = self.restrict(inputs=inputs, outputs=outputs)
         # Speed up execution of the block
         block.no_filenames_in_tracebacks = True
         leni = len(inputs)
         leno = len(outputs)
+
         def simplefunc(*args):
             if len(args) != leni:
-                raise ValueError, "Must have %d inputs" % leni
+                raise ValueError("Must have %d inputs" % leni)
             namespace = {}
             for i, arg in enumerate(args):
                 namespace[inputs[i]] = arg
@@ -592,7 +608,8 @@ class Block(HasTraits):
             for name in outputs:
                 vals.append(namespace[name])
             return tuple(vals)
-        callstr = '(%s)'% ','.join(inputs)
+
+        callstr = '(%s)' % ','.join(inputs)
         retstr = ','.join(outputs)
         simplefunc.__doc__ = "%s = <name>%s" % (retstr, callstr)
         simplefunc._block = block
@@ -648,7 +665,7 @@ class Block(HasTraits):
 
                 elif name in ('sub_blocks', 'sub_blocks_items'):
 
-                    self.ast = Stmt([ b.ast for b in self.sub_blocks ])
+                    self.ast = Stmt([b.ast for b in self.sub_blocks])
 
                 else:
                     assert False
@@ -759,14 +776,14 @@ class Block(HasTraits):
     ###########################################################################
 
     @classmethod
-    def from_file(cls, f): # (XXX Deprecated)
+    def from_file(cls, f):  # (XXX Deprecated)
         'Create a Block from a source file.'
         import warnings
         warnings.warn(DeprecationWarning("Use Block.__init__(file=...)"))
         return cls(file=f)
 
     @classmethod
-    def from_string(cls, s): # (XXX Deprecated)
+    def from_string(cls, s):  # (XXX Deprecated)
         'Create a Block from a code string.'
         import warnings
         warnings.warn(DeprecationWarning("Use Block.__init__"))
@@ -794,7 +811,7 @@ class Block(HasTraits):
                 # Treat 'Stmt([node])' the same as 'node'
                 result = cls._decompose(ast.nodes[0])
             else:
-                result = map(Block, ast.nodes)
+                result = list(map(Block, ast.nodes))
         else:
             result = [Block(ast)]
 
@@ -845,6 +862,7 @@ class Block(HasTraits):
         class Graph(dict):
             def link(self, k, v):
                 return self.setdefault(k, set()).add(v)
+
             def unlink_from(self, k):
                 if k in self:
                     del self[k]
@@ -876,7 +894,7 @@ class Block(HasTraits):
                         dep_graph.link(b, env[prefix])
                         process_i = False
                         break
-                    suffix = suffix[suffix.find('.')+1:]
+                    suffix = suffix[suffix.find('.') + 1:]
 
                 if process_i:
                     if i in env:
@@ -899,9 +917,11 @@ class Block(HasTraits):
                 if c in env:
                     dep_graph.link(b, env[c])
                 else:
+
                     def f(b=b, c=c):
                         if c in inputs:
                             dep_graph.link(b, c)
+
                     deferred.add(f)
 
                 # 'b' contributes conditional outputs to the aggregate block
@@ -931,6 +951,7 @@ class Block(HasTraits):
             f()
 
         return inputs, outputs, conditional_outputs, dep_graph
+
 
 class Expression(HasTraits):
 
@@ -980,9 +1001,11 @@ class Expression(HasTraits):
         v = compiler.walk(ast, NameFinder())
         return Expression(ast, v.free, v.locals)
 
+
 ################################################################################
 # Util
 ################################################################################
+
 
 def to_block(x):
     "Coerce 'x' to a Block without creating a copy if it's one already"

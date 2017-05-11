@@ -6,9 +6,8 @@
 # LICENSE.txt
 #
 
-from __future__ import absolute_import
-
 from traits.api import Interface
+
 
 class IAdapterManager(Interface):
     """ Handles management of an adapter stack for objects that implement

@@ -17,6 +17,7 @@ velocity = distance/time
 momentum = mass*velocity
 """
 
+
 class SimpleBlockContextApp(HasTraits):
     # the data context we are listening to
     data = Instance(DataContext)
@@ -25,7 +26,8 @@ class SimpleBlockContextApp(HasTraits):
     block = Instance(Block)
 
     # a wrapper around the data to interface with the UI
-    tcw = Property(Instance(TraitslikeContextWrapper), depends_on=["block", "data"])
+    tcw = Property(
+        Instance(TraitslikeContextWrapper), depends_on=["block", "data"])
 
     # a view for the wrapper
     tcw_view = Property(Instance(View), depends_on="block")
@@ -42,12 +44,12 @@ class SimpleBlockContextApp(HasTraits):
     @cached_property
     def _get_tcw_view(self):
         """Getter for tcw_view: returns View of block inputs and outputs"""
-        inputs = tuple(Item(name=input)
-                       for input in sorted(self.block.inputs))
-        outputs = tuple(Item(name=output, style="readonly")
-                        for output in sorted(self.block.outputs))
-        return View(Group(*(inputs+outputs)),
-                    kind="live")
+        inputs = tuple(Item(name=input) for input in sorted(self.block.inputs))
+        outputs = tuple(
+            Item(
+                name=output, style="readonly")
+            for output in sorted(self.block.outputs))
+        return View(Group(*(inputs + outputs)), kind="live")
 
     @cached_property
     def _get_tcw(self):
@@ -67,6 +69,7 @@ class SimpleBlockContextApp(HasTraits):
             except:
                 # ignore exceptions in the block
                 pass
+
 
 if __name__ == "__main__":
     block = Block(code)

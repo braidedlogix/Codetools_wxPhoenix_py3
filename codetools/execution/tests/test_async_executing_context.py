@@ -8,7 +8,7 @@ else:
 from codetools.contexts.api import DataContext
 from codetools.execution.executing_context import CodeExecutable
 from codetools.execution.restricting_code_executable import (
-        RestrictingCodeExecutable)
+    RestrictingCodeExecutable)
 from codetools.execution.async_executing_context import AsyncExecutingContext
 
 ce = CodeExecutable(code="c = a + b")
@@ -19,7 +19,6 @@ f = 1 + g"""
 
 
 class TestAsyncExecutingContext(unittest.TestCase):
-
     def setUp(self):
         self.events = []
         self.exceptions = []
@@ -71,7 +70,7 @@ class TestAsyncExecutingContext(unittest.TestCase):
 
     def test_rapid_updates(self):
         self.ec.on_trait_change(self._items_modified_fired, 'items_modified')
-        for i in xrange(10):
+        for i in range(10):
             self.ec['a'] = i
         self.ec._wait()
         self.assertEqual(self.ec['a'], 9)

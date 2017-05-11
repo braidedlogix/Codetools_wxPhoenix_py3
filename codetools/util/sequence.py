@@ -4,6 +4,7 @@
 # sequence objects
 ###############################################################################
 
+
 def is_sequence(x):
     try:
         iter(x)
@@ -11,12 +12,14 @@ def is_sequence(x):
     except TypeError:
         return False
 
-all = lambda l: False not in map(bool, l)
-any = lambda l: True in map(bool, l)
+
+all = lambda l: False not in list(map(bool, l))
+any = lambda l: True in list(map(bool, l))
 
 ###############################################################################
 # list
 ###############################################################################
+
 
 def concat(lists):
     ''' Concatenate a list of lists.
@@ -31,14 +34,16 @@ def concat(lists):
         []
     '''
     l = []
-    map(l.extend, lists)
+    list(map(l.extend, lists))
     return l
+
 
 ###############################################################################
 # set
 ###############################################################################
 
 from copy import copy
+
 
 def union(sets):
     ''' Union a collection of sets.
@@ -49,8 +54,9 @@ def union(sets):
         set([])
     '''
     s = set()
-    map(s.update, sets)
+    list(map(s.update, sets))
     return s
+
 
 def intersect(sets):
     ''' Intersect a non-empty collection of sets.
@@ -65,9 +71,10 @@ def intersect(sets):
         bad
     '''
     sets = iter(sets)
-    s = copy(sets.next())
-    map(s.intersection_update, sets)
+    s = copy(next(sets))
+    list(map(s.intersection_update, sets))
     return s
+
 
 def disjoint(*sets):
     ''' Test whether a collection of sets is pair-wise disjoint.

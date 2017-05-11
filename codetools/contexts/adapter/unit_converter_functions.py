@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-
 """ A collection of unit manipulation functions that are used as converters
     for UnitManipulationAdapter instantiations.
 
@@ -13,14 +12,11 @@
     they are used.
 """
 
-from __future__ import absolute_import
-
 import numpy
 
 # ETS
 from scimath import units
 from scimath.units.api import UnitArray
-
 
 ################################################################################
 # Unit Converter functions:
@@ -29,6 +25,7 @@ from scimath.units.api import UnitArray
 # of object with new units.
 ################################################################################
 
+
 def unit_array_units_converter(unit_array, new_units):
     """ Convert a UnitArray from one set of units to another.
     """
@@ -36,7 +33,8 @@ def unit_array_units_converter(unit_array, new_units):
         # A conversion is needed. Must pass in a real ndarray instead of
         # a UnitArray since operations on it will also try to conversions that
         # we don't want it to do.
-        result = units.convert(unit_array.view(numpy.ndarray), unit_array.units,
+        result = units.convert(
+            unit_array.view(numpy.ndarray), unit_array.units,
             new_units).view(UnitArray)
         result.units = new_units
     else:
@@ -54,6 +52,7 @@ def unit_array_units_converter(unit_array, new_units):
 # a new type of object.
 ################################################################################
 
+
 def array_to_unit_array_converter(array, new_units):
     """ Create a UnitArray with units='new_units' from the given 'array'.
     """
@@ -68,6 +67,7 @@ def array_to_unit_array_converter(array, new_units):
 # No conversion unit conversion takes place.
 ################################################################################
 
+
 def unit_array_units_overwriter(unit_array, new_units):
     """ Overwrite the units for a UnitArray with the new units.
     """
@@ -76,4 +76,3 @@ def unit_array_units_overwriter(unit_array, new_units):
         unit_array.units = new_units
 
     return unit_array
-

@@ -1,5 +1,6 @@
 from traits.api import Interface
 
+
 class IAdapter(Interface):
     """ Handles management of an adapter stack for objects that implement
         IContext.

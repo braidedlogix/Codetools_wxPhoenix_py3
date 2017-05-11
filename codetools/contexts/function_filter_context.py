@@ -9,7 +9,7 @@ import types
 import numpy
 
 # Local imports
-from data_context import DataContext
+from .data_context import DataContext
 
 
 class FunctionFilterContext(DataContext):
@@ -28,5 +28,3 @@ class FunctionFilterContext(DataContext):
                         or isinstance(value, numpy.ufunc)
 
         return (allows_name and allows_value)
-
-

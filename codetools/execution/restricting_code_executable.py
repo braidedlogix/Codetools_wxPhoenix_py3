@@ -5,13 +5,13 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
-from traits.api import (HasStrictTraits, Str, provides, Instance,
-        adapt, on_trait_change)
+from traits.api import (HasStrictTraits, Str, provides, Instance, adapt,
+                        on_trait_change)
 from codetools.blocks.block import Block
 from codetools.execution.interfaces import IExecutable
 from codetools.contexts.i_context import IContext
+
 
 @provides(IExecutable)
 class RestrictingCodeExecutable(HasStrictTraits):

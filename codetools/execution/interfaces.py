@@ -7,7 +7,6 @@
 #
 """ Interfaces for the execution package.
 """
-from __future__ import absolute_import
 
 from traits.api import Bool, Instance, Interface
 

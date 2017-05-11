@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 # Enthought imports
 from traits.api import HasTraits, List, implements
@@ -28,7 +27,6 @@ class AdapterManagerMixin(HasTraits):
     # closest to the context data.
     _adapters = List
 
-
     ############################################################################
     # IAdapterManager public interface
     ############################################################################
@@ -44,7 +42,6 @@ class AdapterManagerMixin(HasTraits):
             fixme: How to handle if the stack is empty?
         """
         return self._adapters.pop()
-
 
     ### Private AdapterMangerMixin interface ###################################
 

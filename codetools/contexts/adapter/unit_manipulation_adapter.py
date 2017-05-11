@@ -5,14 +5,11 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-
 """ Primary adapter implementation for many unit manipulation tasks
     such as conversion, correcting units, or adding units to an item.
 
     See unit_conversion_adapter.py for a concrete example.
 """
-
-from __future__ import absolute_import
 
 #Enthought Library imports
 from traits.api import Dict, Any, provides, HasTraits
@@ -133,8 +130,6 @@ class UnitManipulationAdapter(HasTraits):
             # Conversion requested (new_units exist), but a converter
             # wasn't found.
             msg = "Unable to find converter for type %s" % type(value)
-            raise ConversionError, msg
+            raise ConversionError(msg)
 
         return value
-
-

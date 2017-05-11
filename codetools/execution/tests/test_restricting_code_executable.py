@@ -6,7 +6,7 @@ else:
 
 from codetools.execution.executing_context import ExecutingContext
 from codetools.execution.restricting_code_executable import (
-        RestrictingCodeExecutable)
+    RestrictingCodeExecutable)
 
 CODE = """aa = 2 * a
 bb = 2 * b
@@ -15,7 +15,6 @@ c = a + b + aa + bb
 
 
 class TestRestrictingCodeExecutable(unittest.TestCase):
-
     def setUp(self):
         self.restricting_exec = RestrictingCodeExecutable(code=CODE)
         self.context = {'a': 1, 'b': 10}
@@ -47,11 +46,12 @@ class TestRestrictingCodeExecutable(unittest.TestCase):
         self.assertEqual(self.events, ['fired'])
 
     def test_api_compatibility(self):
-        executing_context = ExecutingContext(executable=self.restricting_exec,
-                subcontext=self.context)
+        executing_context = ExecutingContext(
+            executable=self.restricting_exec, subcontext=self.context)
         self.assertIs(self.context, executing_context.subcontext.subcontext)
         executing_context.execute_for_names(None)
-        executing_context.on_trait_change(self._change_detect, 'items_modified')
+        executing_context.on_trait_change(self._change_detect,
+                                          'items_modified')
         executing_context['bb'] = 5
         self.assertEqual(self.events, ['fired', 'fired'])
         expected_context = {'a': 1, 'b': 10, 'aa': 2, 'bb': 5, 'c': 18}

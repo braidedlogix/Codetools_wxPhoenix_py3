@@ -2,7 +2,7 @@
 
 from compiler.ast import Node
 
-import ast
+from . import ast
 
 Node.__eq__ = ast.similar
 Node.__ne__ = lambda self, other: not (self == other)

@@ -14,6 +14,7 @@ from codetools.contexts.adapter.unit_conversion_adapter import UnitConversionAda
 
 from scimath.units.api import UnitArray
 
+
 class AdaptedDataContextTestCase(unittest.TestCase):
 
     ###########################################################################
@@ -26,11 +27,11 @@ class AdaptedDataContextTestCase(unittest.TestCase):
         # Put unit adapters on either side of a masking adapter to see if they
         # cooperate. Store meters in the raw context, push fathoms through the
         # mask, and expose feet to the outside world.
-        self.units = units = { 'in':meters, 'mid':fathom, 'out':feet }
+        self.units = units = {'in': meters, 'mid': fathom, 'out': feet}
 
         # Set up data for the contexts
         depth = UnitArray(linspace(0.0, 100.0, 11), units=units['in'])
-        lith = array(['sand']*len(depth), dtype=object)
+        lith = array(['sand'] * len(depth), dtype=object)
 
         # Create the contexts
         self.context = AdaptedDataContext(subcontext=DataContext())
@@ -44,8 +45,10 @@ class AdaptedDataContextTestCase(unittest.TestCase):
             class C(dict):
                 def get(self, key, default=None):
                     return value
+
                 def __repr__(self):
                     return '{*:%r}' % value
+
             return C()
 
         # Layer multiple adapters
@@ -58,13 +61,13 @@ class AdaptedDataContextTestCase(unittest.TestCase):
         #                          getitem_units=always(units['mid'])))
         self.context.push_adapter(MaskingAdapter(mask=self.mask))
         self.context.push_adapter(
-        #    UnitConversionAdapter(setitem_units=always(units['mid']),
-            UnitConversionAdapter(setitem_units=always(units['in']),
-                                  getitem_units=always(units['out'])))
+            #    UnitConversionAdapter(setitem_units=always(units['mid']),
+            UnitConversionAdapter(
+                setitem_units=always(units['in']),
+                getitem_units=always(units['out'])))
 
         # TODO Nest masking adapters (broken)
         # TODO Allow unit adapters on either side of masking adapters (broken)
-
 
     ###########################################################################
     # AdaptedDataContextTestCase interface
@@ -109,6 +112,7 @@ class AdaptedDataContextTestCase(unittest.TestCase):
 
         self.assertEqual(len(value), len(desired))
         self.assertTrue(allclose(value, desired))
+
 
 if __name__ == '__main__':
     import sys

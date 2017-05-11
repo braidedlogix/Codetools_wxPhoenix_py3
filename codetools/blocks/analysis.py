@@ -5,13 +5,20 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 import compiler, compiler.ast
 from compiler.ast import (
-    AssAttr, Assign, AssName, Const, Dict, Expression, Getattr, List, Name,
-    Node, Tuple,
-)
+    AssAttr,
+    Assign,
+    AssName,
+    Const,
+    Dict,
+    Expression,
+    Getattr,
+    List,
+    Name,
+    Node,
+    Tuple, )
 from copy import copy, deepcopy
 import logging
 
@@ -30,24 +37,27 @@ import codetools.blocks.compiler_.ast.get_children_tree
 
 logger = logging.getLogger(__name__)
 
-
 ###############################################################################
 # analysis public interface
 ###############################################################################
 
 ### Names #####################################################################
 
+
 def free_vars(ast, *args, **kw):
     return walk(ast, NameFinder(*args, **kw)).free
 
+
 def local_vars(ast, *args, **kw):
     return walk(ast, NameFinder(*args, **kw)).locals
+
 
 def conditional_local_vars(ast, *args, **kw):
     return walk(ast, NameFinder(*args, **kw)).conditional_locals
 
 
 ### Structure #################################################################
+
 
 def extract_const_assigns(ast):
     ''' Transform an AST by extracting its constant assignment statements.
@@ -63,6 +73,7 @@ def extract_const_assigns(ast):
     t = ConstAssignExtractor()
     ast = t.transform(ast)
     return ast, t.const_for
+
 
 def is_const(ast):
     """ Whether an AST represents a constant expression.
@@ -104,12 +115,11 @@ def is_const(ast):
             ... ))
             False
     """
-    return (
-        isinstance(ast, Const) or
-        isinstance(ast, Name) and ast.name in ['None', 'True', 'False'] or
-        isinstance(ast, (List, Tuple, Dict)) and all(map(is_const, ast)) or
-        isinstance(ast, Expression) and is_const(ast.node)
-    )
+    return (isinstance(ast, Const) or isinstance(ast, Name) and
+            ast.name in ['None', 'True', 'False'] or
+            isinstance(ast, (List, Tuple, Dict)) and all(map(is_const, ast)) or
+            isinstance(ast, Expression) and is_const(ast.node))
+
 
 def dependency_graph(asts, to_ast=lambda x: x):
     """ Compute the dependency graph for a set of ASTs.
@@ -193,21 +203,23 @@ def dependency_graph(asts, to_ast=lambda x: x):
         # Take the transitive closure of the relation and return just the
         # Node-Node pairs
         g = closure(g)
-        for k,vs in g.items():
+        for k, vs in list(g.items()):
             if not isinstance(k, Node):
                 del g[k]
             else:
-                g[k] = [ v for v in vs if isinstance(v, Node) ]
+                g[k] = [v for v in vs if isinstance(v, Node)]
         return g
 
     # Push 'asts' through 'to_ast', build the graph, and then pull them back
-    d = dict( (to_ast(x), x) for x in asts )
+    d = dict((to_ast(x), x) for x in asts)
     assert len(d) == len(asts)
     return graph.map(lambda ast: d[ast], _dependency_graph(list(d)))
+
 
 ###############################################################################
 # analysis private interface
 ###############################################################################
+
 
 def walk(x, visitor, walker=None, verbose=None):
     "Wrap compiler.walk to handle 'None' and sequences."
@@ -217,12 +229,13 @@ def walk(x, visitor, walker=None, verbose=None):
         return visitor
     elif isinstance(x, Node):
         return compiler.walk(x, visitor, walker, verbose)
-    elif is_sequence(x) and not isinstance(x, basestring):
+    elif is_sequence(x) and not isinstance(x, str):
         for n in x:
             visitor = walk(n, visitor, walker, verbose)
         return visitor
     else:
         raise ValueError(x)
+
 
 class NameFinder:
     'Find and classify variable names'
@@ -237,7 +250,7 @@ class NameFinder:
         self.imports = []
 
         # Consider built-in names as global to anything
-        import __builtin__
+        import builtins
         self.globals |= set(dir(__builtin__))
 
     ###########################################################################
@@ -247,7 +260,7 @@ class NameFinder:
     def all_locals(self):
         return self.locals | self.conditional_locals
 
-    def _see_unbound(self, names): # TODO I dislike this name...
+    def _see_unbound(self, names):  # TODO I dislike this name...
         for name in set(names) - self.globals - self.locals:
             # (Conditional locals don't bind free names)
 
@@ -263,7 +276,7 @@ class NameFinder:
 
                 if prefix in self.locals:
                     return
-                suffix = suffix[suffix.find('.')+1:]
+                suffix = suffix[suffix.find('.') + 1:]
 
             self.free.add(name)
 
@@ -361,7 +374,6 @@ class NameFinder:
                 v = walk(arg, NameFinder())
                 self._see_unbound(v.free)
 
-
     def visitImport(self, node):
         self.imports.append(node)
         for name, alias in node.names:
@@ -389,7 +401,7 @@ class NameFinder:
 
     def visitIf(self, node):
 
-        unzip = lambda l: map(list, zip(*l))
+        unzip = lambda l: list(map(list, list(zip(*l))))
 
         # Gather children
         tests, bodies = unzip(node.tests)
@@ -397,7 +409,7 @@ class NameFinder:
 
         # Visit children
         tests_v = walk(tests, NameFinder())
-        body_vs = [ walk(b, NameFinder()) for b in bodies ]
+        body_vs = [walk(b, NameFinder()) for b in bodies]
         assert not (tests_v.locals or tests_v.conditional_locals)
 
         # Free names come from tests and bodies
@@ -461,7 +473,7 @@ class NameFinder:
         # Visit children
         body_v = walk([node.body, node.else_], NameFinder())
         # (A handler is (type, name, body) where 'type' and 'name' can be None)
-        handler_vs = [ walk(h, NameFinder()) for h in node.handlers ]
+        handler_vs = [walk(h, NameFinder()) for h in node.handlers]
         assert all(not v.conditional_locals for v in handler_vs)
 
         # Free names come from 'try', 'else', and names in 'except' that aren't
@@ -508,10 +520,11 @@ class NameFinder:
     #
     def visitListComp(self, node):
         self._visitListCompGenExpr(node)
+
     def visitGenExpr(self, node):
         self._visitListCompGenExpr(node.code)
-    def _visitListCompGenExpr(self, node):
 
+    def _visitListCompGenExpr(self, node):
         def seq(node):
             try:
                 return node.list
@@ -523,7 +536,7 @@ class NameFinder:
         # All locals are conditional.
 
         # Visit children
-        node = [ (seq(n), n.assign, n.ifs) for n in node.quals ] + [node.expr]
+        node = [(seq(n), n.assign, n.ifs) for n in node.quals] + [node.expr]
         v = walk(node, NameFinder())
         assert not v.conditional_locals
 
@@ -544,8 +557,9 @@ class NameFinder:
         g = self.globals - set(node.argnames)
         l = self.locals | set(node.argnames)
         c = self.conditional_locals
-        v = walk(node.code,
-                 NameFinder(globals=g, locals=l, conditional_locals=c))
+        v = walk(
+            node.code, NameFinder(
+                globals=g, locals=l, conditional_locals=c))
         assert v.globals == g
         assert v.locals == l
         assert v.conditional_locals == c
@@ -590,8 +604,8 @@ class NameFinder:
         # Find free vars nearby
         walk(node.defaults, self)
 
-        globals      = self.globals - set(node.argnames)
-        locals       = self.locals | set(node.argnames)
+        globals = self.globals - set(node.argnames)
+        locals = self.locals | set(node.argnames)
         conditionals = self.conditional_locals
 
         self._bind([node.name])
@@ -605,8 +619,10 @@ class NameFinder:
     # Nothing needs nested blocks yet, so we punt because the global/local
     # scoping rules are complicated. (A partially correct implementation lives
     # in the source control history (with tests!).)
+
     def visitClass(self, node):
         raise NotImplementedError('Nested block: %s' % node.name)
+
 
 # A variation on the compiler module's visitor pattern
 class Transformer(object):
@@ -630,8 +646,8 @@ class Transformer(object):
                 return getattr(self, method)(x)
             else:
                 return self._transform_children(x)
-        elif is_sequence(x) and not isinstance(x, basestring):
-            return x.__class__(map(self.transform, x))
+        elif is_sequence(x) and not isinstance(x, str):
+            return x.__class__(list(map(self.transform, x)))
         else:
             return deepcopy(x)
 
@@ -646,8 +662,8 @@ class Transformer(object):
         children = tree_map(partial(self.transform), node.getChildrenTree())
         return node.__class__(*children)
 
-class ConstAssignExtractor(Transformer):
 
+class ConstAssignExtractor(Transformer):
     def __init__(self):
         super(ConstAssignExtractor, self).__init__()
         self.const_for = {}
@@ -700,16 +716,18 @@ class ConstAssignExtractor(Transformer):
 
         # Gather name<->const mappings for names we haven't seen before
         name_for = {}
-        for name in const_ast_for.keys():
-            if name not in self.const_for.keys():
-                self.const_for[name] = eval_ast(Expression(const_ast_for[name]))
+        for name in list(const_ast_for.keys()):
+            if name not in list(self.const_for.keys()):
+                self.const_for[name] = eval_ast(
+                    Expression(const_ast_for[name]))
                 assert const_ast_for[name] not in name_for
                 name_for[const_ast_for[name]] = name
 
         class C(Transformer):
             def transform(self, node):
-                if isinstance(node, Node) and node in name_for.keys():
+                if isinstance(node, Node) and node in list(name_for.keys()):
                     return Name(name_for[node])
                 else:
                     return super(C, self).transform(node)
+
         return Assign(node.nodes, C().transform(rhs))

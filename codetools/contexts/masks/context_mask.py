@@ -5,6 +5,7 @@
 #  ContextMask class
 #------------------------------------------------------------------------------
 
+
 class ContextMask(object):
     """ BaseClass that is used for implementing with-statement
 
@@ -28,9 +29,8 @@ class ContextMask(object):
             self.value_dict = value_dict
 
             self.init_value_dict = {}
-            for name in self.context.keys():
+            for name in list(self.context.keys()):
                 self.init_value_dict[name] = self.context[name][self.indices]
-
 
     def __enter__(self):
         """ Method to be overwritten for a mask class.
@@ -41,12 +41,11 @@ class ContextMask(object):
         """
 
         if len(self.indices):
-            for name in self.context.keys():
-                if self.value_dict.has_key(name):
+            for name in list(self.context.keys()):
+                if name in self.value_dict:
                     self.context[name][self.indices] = self.value_dict[name]
 
         return self.context
-
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """ Method to be overwritten for a mask class
@@ -58,13 +57,12 @@ class ContextMask(object):
 
         # Revert all the changes done in __enter__ method.
         if len(self.indices):
-            for name in self.context.keys():
-                if self.value_dict.has_key(name):
+            for name in list(self.context.keys()):
+                if name in self.value_dict:
                     self.context[name][self.indices] = \
                                     self.init_value_dict[name]
 
         return self.context
-
 
     #---------------------------------------------------------------------------
     #  ContextMask interface

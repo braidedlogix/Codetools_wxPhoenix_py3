@@ -5,10 +5,8 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-
 """ Mask values going in and out of a context.
 """
-from __future__ import absolute_import
 
 # Standard library imports
 from copy import copy
@@ -21,6 +19,7 @@ from traits.api import Any, HasTraits
 from .i_adapter import IAdapter
 
 # TODO Generalize to any slice object (eventually)
+
 
 class MaskingAdapter(HasTraits):
     """ Apply a mask to values in a context that are compatible.

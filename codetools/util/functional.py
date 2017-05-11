@@ -8,6 +8,8 @@
 'Non-standard higher-order functions'
 
 from functools import partial
+from functools import reduce
+
 
 def compose(*fs):
     ''' ``compose(f,g,...,h)(*args, **kw) == f(g(...(h(*args, **kw))))``
@@ -25,5 +27,5 @@ def compose(*fs):
     if len(fs) == 0:
         return lambda x: x
 
-    binary_compose = lambda f,g: lambda *args, **kw: f(g(*args, **kw))
+    binary_compose = lambda f, g: lambda *args, **kw: f(g(*args, **kw))
     return reduce(binary_compose, fs)

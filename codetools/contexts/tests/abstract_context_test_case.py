@@ -1,5 +1,5 @@
 # Standard Library Imports
-from itertools import imap
+
 import timeit
 import unittest
 from UserDict import DictMixin
@@ -9,6 +9,7 @@ from numpy import all
 
 # Geo library imports
 from codetools.contexts.tests.mapping_test_case import BasicTestMappingProtocol
+
 
 def adapt_keys(context):
     ''' Wrap a context so that it accepts all key types used by
@@ -30,19 +31,24 @@ def adapt_keys(context):
         ''' A mapping object that converts keys into strings and otherwise
             delegates to another mapping object.
         '''
+
         def __init__(self, mapping_object):
             self._m = mapping_object
 
         def __getitem__(self, x):
             return self._m[to_str(x)]
+
         def __setitem__(self, x, value):
             self._m[to_str(x)] = value
+
         def __delitem__(self, x):
             del self._m[to_str(x)]
+
         def keys(self):
-            return map(from_str, self._m.keys())
+            return list(map(from_str, list(self._m.keys())))
 
     return KeyAdapter(context)
+
 
 # Subtype BasicTestMappingProtocol for free mapping object test cases:
 # TestMappingProtocol assumes 'fromkeys' and 'copy', which we don't implement
@@ -55,8 +61,8 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         up and run by the unittest harness. You must mixin unittest.TestCase
         in your derived class.
     """
-    #         fixme: There has to be a smarter way of doing this...
 
+    #         fixme: There has to be a smarter way of doing this...
 
     ############################################################################
     # unittest.TestCase interface
@@ -65,7 +71,7 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
     # Don't run tests without a concrete test case
     def run(self, result=None):
         if (type(self).__name__ == 'AbstractContextTestCase' or
-            type(self) is AbstractContextTestCase):
+                type(self) is AbstractContextTestCase):
             return result
         else:
             return super(AbstractContextTestCase, self).run(result)
@@ -77,8 +83,7 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
            We've overloaded this here to handle arrays.
         """
         if not all(first == second):
-            raise self.failureException, \
-                  (msg or '%r != %r' % (first, second))
+            raise self.failureException(msg or '%r != %r' % (first, second))
 
     ############################################################################
     # BasicTestMappingProtocol interface
@@ -139,7 +144,7 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         """
         context = self.context_factory()
         key_name = self.key_name()
-        a,b = self.unmatched_pair()
+        a, b = self.unmatched_pair()
 
         self._get_set_like_dict(context, key_name, a, a)
         self._get_set_like_dict(context, key_name, b, b)
@@ -164,8 +169,8 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         key_name = self.key_name()
         input, output = self.matched_input_output_pair()
 
-        self._del_non_existing_item_raises_exception(context, key_name,
-                                                     input, output)
+        self._del_non_existing_item_raises_exception(context, key_name, input,
+                                                     output)
 
         return
 
@@ -179,7 +184,7 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         input, output = self.matched_input_output_pair()
 
         context[key_name] = input
-        self.assertTrue(context.has_key(key_name))
+        self.assertTrue(key_name in context)
 
         return
 
@@ -189,7 +194,7 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         context = self.context_factory()
         key_name = self.key_name()
 
-        self.assertFalse(context.has_key(key_name))
+        self.assertFalse(key_name in context)
 
         return
 
@@ -201,11 +206,11 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         input, output = self.matched_input_output_pair()
 
         # Make sure it is empty to start.
-        self.failUnlessEqual(list(context.keys()), [])
+        self.assertEqual(list(context.keys()), [])
 
         # Now it should have another value in it.
         context[key_name] = input
-        self.failUnlessEqual(list(context.keys()), [key_name])
+        self.assertEqual(list(context.keys()), [key_name])
 
         return
 
@@ -232,8 +237,8 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         key_name = self.key_name()
         input, output = self.matched_input_output_pair()
 
-        self._eval_with_bad_name_raises_nameerror(context, key_name,
-                                                  input, output)
+        self._eval_with_bad_name_raises_nameerror(context, key_name, input,
+                                                  output)
 
         return
 
@@ -252,7 +257,7 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         """
 
         context[key_name] = input
-        self.failUnlessEqual(context[key_name], output)
+        self.assertEqual(context[key_name], output)
 
         return
 
@@ -261,12 +266,12 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
         """
         context[key_name] = input
         del context[key_name]
-        self.assertFalse(context.has_key(key_name))
+        self.assertFalse(key_name in context)
 
         return
 
-    def _del_non_existing_item_raises_exception(self, context, key_name,
-                                                input, output):
+    def _del_non_existing_item_raises_exception(self, context, key_name, input,
+                                                output):
         """ Does deleting a non-existent item raise a KeyError excetion?
         """
 
@@ -285,14 +290,14 @@ class AbstractContextTestCase(BasicTestMappingProtocol):
                   be over-ridden.
         """
         context[key_name] = input
-        expr = key_name + '+ 1' # soemthing like 'foo + 1'
+        expr = key_name + '+ 1'  # soemthing like 'foo + 1'
         result = eval(expr, globals(), context)
-        self.failUnlessEqual(result, context[key_name]+1)
+        self.assertEqual(result, context[key_name] + 1)
 
         return
 
-    def _eval_with_bad_name_raises_nameerror(self, context, key_name,
-                                             input, output):
+    def _eval_with_bad_name_raises_nameerror(self, context, key_name, input,
+                                             output):
         """ If a name is missing in the eval statement, is NameError raised?
         """
 

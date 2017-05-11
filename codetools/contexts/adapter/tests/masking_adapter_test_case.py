@@ -19,8 +19,8 @@ class MaskingAdapterTestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         # Set up data for the contexts
-        depth = linspace(0.0,100.0, 11)
-        lith = array(['sand']*len(depth), dtype=object)
+        depth = linspace(0.0, 100.0, 11)
+        lith = array(['sand'] * len(depth), dtype=object)
 
         # Create the contexts
         self.context = AdaptedDataContext(subcontext=DataContext())
@@ -30,7 +30,7 @@ class MaskingAdapterTestCase(unittest.TestCase):
         self.context.update(depth=depth, lith=lith)
 
         # Add an adapter
-        self.mask = (20.0<=depth) & (depth<=50.0)
+        self.mask = (20.0 <= depth) & (depth <= 50.0)
         self.adapter = MaskingAdapter(mask=self.mask)
         self.context.push_adapter(self.adapter)
 
@@ -47,7 +47,7 @@ class MaskingAdapterTestCase(unittest.TestCase):
         name, value = self.adapter.adapt_getitem(self.raw_context, 'depth',
                                                  self.raw_context['depth'])
         self.assertEqual(len(value), 4)
-        self.assertTrue(all(value==(20.0, 30.0, 40.0, 50.0)))
+        self.assertTrue(all(value == (20.0, 30.0, 40.0, 50.0)))
 
     def test_setitem_existing_value(self):
         """ Does setitem on existing data only change the masked values?
@@ -60,7 +60,7 @@ class MaskingAdapterTestCase(unittest.TestCase):
         name, value = self.adapter.adapt_setitem(self.raw_context, 'depth',
                                                  new_values)
         self.assertEqual(len(value), 11)
-        self.assertTrue(all(value==desired))
+        self.assertTrue(all(value == desired))
 
     def test_setitem_non_existing_value(self):
         """ Does setitem on non-existing data expand to depth's shape?
@@ -75,14 +75,15 @@ class MaskingAdapterTestCase(unittest.TestCase):
                                                  new_values)
 
         self.assertEqual(len(value), len(desired))
-        self.assertTrue(all((value==desired) | (isnan(value)==isnan(desired))))
+        self.assertTrue(
+            all((value == desired) | (isnan(value) == isnan(desired))))
 
     def test_context_getitem(self):
         """ Are the returned values from context masked correctly?
         """
         depth = self.context['depth']
         self.assertEqual(len(depth), 4)
-        self.assertTrue(all(depth==(20.0, 30.0, 40.0, 50.0)))
+        self.assertTrue(all(depth == (20.0, 30.0, 40.0, 50.0)))
 
     def test_context_setitem_existing(self):
         """ Are the returned values from context masked correctly?
@@ -95,7 +96,8 @@ class MaskingAdapterTestCase(unittest.TestCase):
 
         desired = self.raw_context['depth'].copy()
         desired[self.mask] = new_values
-        self.assertTrue(all(depth==desired))
+        self.assertTrue(all(depth == desired))
+
 
 if __name__ == '__main__':
     import sys

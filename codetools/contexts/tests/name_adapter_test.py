@@ -15,15 +15,15 @@ def test_name_adapter_get_set():
     subcx = DataContext(subcontext=dict(a1=obj1, a2=obj2))
 
     name_map1 = {
-        'b1':'a1',
-        'b2':'a2',
-        'b3':'a3'  # nonexistent
-       }
+        'b1': 'a1',
+        'b2': 'a2',
+        'b3': 'a3'  # nonexistent
+    }
     name_map2 = {
-        'c1':'b1',
-        'c2':'b2',
-        'c3':'b3', # eventually nonexistent
-       }
+        'c1': 'b1',
+        'c2': 'b2',
+        'c3': 'b3',  # eventually nonexistent
+    }
 
     name_adapter1 = NameAdapter(map=name_map1)
     name_adapter2 = NameAdapter(map=name_map2)
@@ -38,23 +38,23 @@ def test_name_adapter_get_set():
     context.push_adapter(name_adapter2)
 
     # getitem
-    assert_equal( context['a1'], obj1)
-    assert_equal( context['b1'], obj1)
-    assert_equal( context['c1'], obj1)
+    assert_equal(context['a1'], obj1)
+    assert_equal(context['b1'], obj1)
+    assert_equal(context['c1'], obj1)
 
-    assert_equal( context['a2'], obj2)
-    assert_equal( context['b2'], obj2)
-    assert_equal( context['c2'], obj2)
+    assert_equal(context['a2'], obj2)
+    assert_equal(context['b2'], obj2)
+    assert_equal(context['c2'], obj2)
 
     # setitem
     context['c2'] = obj3
-    assert_equal( context['c2'], obj3)
-    assert_equal( context['b2'], obj3)
-    assert_equal( context['a2'], obj3)
+    assert_equal(context['c2'], obj3)
+    assert_equal(context['b2'], obj3)
+    assert_equal(context['a2'], obj3)
 
-    assert_equal( context['a1'], obj1)
-    assert_equal( context['b1'], obj1)
-    assert_equal( context['c1'], obj1)
+    assert_equal(context['a1'], obj1)
+    assert_equal(context['b1'], obj1)
+    assert_equal(context['c1'], obj1)
 
     # IterableAdaptedDataContext
     context2 = IterableAdaptedDataContext(subcontext=subcx)
@@ -68,7 +68,6 @@ def test_name_adapter_get_set():
         assert_(key in context2)
     assert_('b3' not in context2)
     assert_('c3' not in context2)
-
 
 
 def test_stacked_hybrid_adapters():
@@ -95,24 +94,22 @@ def test_stacked_hybrid_adapters():
     # value ultimately returned by the original top level __getitem__.
 
     class AdaptCtoK(NameAdapter):
-        map = Dict({'frK':'frC', 'boK':'boC'})
+        map = Dict({'frK': 'frC', 'boK': 'boC'})
 
         def adapt_getitem(self, context, name, value):
             if name[-1] == 'C':
-                return name[:-1]+'K', value+FK
+                return name[:-1] + 'K', value + FK
             else:
                 assert_(False, 'AdaptCtoK called unexpectedly on %s' % name)
 
-
     class AdaptFtoC(NameAdapter):
-        map = Dict({'frC':'frF', 'boC':'boF'})
+        map = Dict({'frC': 'frF', 'boC': 'boF'})
 
         def adapt_getitem(self, context, name, value):
             if name[-1] == 'F':
-                return name[:-1]+'C', (value-FF)*(BC-FC)/(BF-FF)
+                return name[:-1] + 'C', (value - FF) * (BC - FC) / (BF - FF)
             else:
                 assert_(False, 'AdaptFtoC called unexpectedly on %s' % name)
-
 
     farenheit_context = DataContext(subcontext=dict(frF=FF, boF=BF))
 
@@ -141,5 +138,3 @@ def test_stacked_hybrid_adapters():
     assert_equal(context['boF'], BK)
     assert_equal(context['boC'], BK)
     assert_equal(context['boK'], BK)
-
-

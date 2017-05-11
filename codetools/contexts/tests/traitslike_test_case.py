@@ -10,8 +10,10 @@ def remove_known_traits(trait_names):
 
     Also, sort the list for ease of use in testing.
     """
-    return sorted([x for x in trait_names
-        if x not in ('_context', '_synched', 'trait_added', 'trait_modified')])
+    return sorted([
+        x for x in trait_names
+        if x not in ('_context', '_synched', 'trait_added', 'trait_modified')
+    ])
 
 
 class TestTraitslike(object):
@@ -75,5 +77,3 @@ class TestTraitslike(object):
         self.tcw._synched = False
         self.tcw.a = 2
         assert self.tcw._context['a'] == 1
-
-

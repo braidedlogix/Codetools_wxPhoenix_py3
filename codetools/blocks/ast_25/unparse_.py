@@ -4,26 +4,27 @@
 "Usage: unparse.py <path to source file>"
 import sys
 import _ast
-import cStringIO
+import io
 import os
+
 
 class Unparser:
     """Methods in this class recursively traverse an AST and
     output source code for the abstract syntax; original formatting
     is disregarged. """
 
-    def __init__(self, tree, file = sys.stdout):
+    def __init__(self, tree, file=sys.stdout):
         """Unparser(tree, file=sys.stdout) -> None.
          Print the source for tree to file."""
         self.f = file
         self._indent = 0
         self.dispatch(tree)
-        print >>self.f,""
+        print("", file=self.f)
         self.f.flush()
 
-    def fill(self, text = ""):
+    def fill(self, text=""):
         "Indent a piece of text, according to the current indentation level"
-        self.f.write("\n"+"    "*self._indent + text)
+        self.f.write("\n" + "    " * self._indent + text)
 
     def write(self, text):
         "Append a piece of text to the current line."
@@ -44,9 +45,8 @@ class Unparser:
             for t in tree:
                 self.dispatch(t)
             return
-        meth = getattr(self, "_"+tree.__class__.__name__)
+        meth = getattr(self, "_" + tree.__class__.__name__)
         meth(tree)
-
 
     ############### Unparsing methods ######################
     # There should be one method per concrete grammar type #
@@ -74,7 +74,7 @@ class Unparser:
                 self.write(", ")
             self.write(a.name)
             if a.asname:
-                self.write(" as "+a.asname)
+                self.write(" as " + a.asname)
 
     def _ImportFrom(self, t):
         self.fill("from ")
@@ -85,7 +85,7 @@ class Unparser:
                 self.write(", ")
             self.write(a.name)
             if a.asname:
-                self.write(" as "+a.asname)
+                self.write(" as " + a.asname)
         # XXX(jpe) what is level for?
 
     def _Assign(self, t):
@@ -98,7 +98,7 @@ class Unparser:
     def _AugAssign(self, t):
         self.fill()
         self.dispatch(t.target)
-        self.write(" "+self.binop[t.op.__class__.__name__]+"= ")
+        self.write(" " + self.binop[t.op.__class__.__name__] + "= ")
         self.dispatch(t.value)
 
     def _Return(self, t):
@@ -144,8 +144,8 @@ class Unparser:
             self.dispatch(t.dest)
             do_comma = True
         for e in t.values:
-            if do_comma:self.write(", ")
-            else:do_comma=True
+            if do_comma: self.write(", ")
+            else: do_comma = True
             self.dispatch(e)
         if not t.nl:
             self.write(",")
@@ -213,7 +213,7 @@ class Unparser:
 
     def _ClassDef(self, t):
         self.write("\n")
-        self.fill("class "+t.name)
+        self.fill("class " + t.name)
         if t.bases:
             self.write("(")
             for a in t.bases:
@@ -229,7 +229,7 @@ class Unparser:
         for deco in t.decorators:
             self.fill("@")
             self.dispatch(deco)
-        self.fill("def "+t.name + "(")
+        self.fill("def " + t.name + "(")
         self.dispatch(t.args)
         self.write(")")
         self.enter()
@@ -340,7 +340,7 @@ class Unparser:
 
     def _Dict(self, t):
         self.write("{")
-        for k,v in zip(t.keys, t.values):
+        for k, v in zip(t.keys, t.values):
             self.dispatch(k)
             self.write(" : ")
             self.dispatch(v)
@@ -357,16 +357,29 @@ class Unparser:
             self.write(", ")
         self.write(")")
 
-    unop = {"Invert":"~", "Not": "not", "UAdd":"+", "USub":"-"}
+    unop = {"Invert": "~", "Not": "not", "UAdd": "+", "USub": "-"}
+
     def _UnaryOp(self, t):
         self.write(self.unop[t.op.__class__.__name__])
         self.write("(")
         self.dispatch(t.operand)
         self.write(")")
 
-    binop = { "Add":"+", "Sub":"-", "Mult":"*", "Div":"/", "Mod":"%",
-                    "LShift":">>", "RShift":"<<", "BitOr":"|", "BitXor":"^", "BitAnd":"&",
-                    "FloorDiv":"//", "Pow": "**"}
+    binop = {
+        "Add": "+",
+        "Sub": "-",
+        "Mult": "*",
+        "Div": "/",
+        "Mod": "%",
+        "LShift": ">>",
+        "RShift": "<<",
+        "BitOr": "|",
+        "BitXor": "^",
+        "BitAnd": "&",
+        "FloorDiv": "//",
+        "Pow": "**"
+    }
+
     def _BinOp(self, t):
         self.write("(")
         self.dispatch(t.left)
@@ -374,17 +387,29 @@ class Unparser:
         self.dispatch(t.right)
         self.write(")")
 
-    cmpops = {"Eq":"==", "NotEq":"!=", "Lt":"<", "LtE":"<=", "Gt":">", "GtE":">=",
-                        "Is":"is", "IsNot":"is not", "In":"in", "NotIn":"not in"}
+    cmpops = {
+        "Eq": "==",
+        "NotEq": "!=",
+        "Lt": "<",
+        "LtE": "<=",
+        "Gt": ">",
+        "GtE": ">=",
+        "Is": "is",
+        "IsNot": "is not",
+        "In": "in",
+        "NotIn": "not in"
+    }
+
     def _Compare(self, t):
         self.write("(")
         self.dispatch(t.left)
         for o, e in zip(t.ops, t.comparators):
-            self.write(") " +self.cmpops[o.__class__.__name__] + " (")
+            self.write(") " + self.cmpops[o.__class__.__name__] + " (")
             self.dispatch(e)
             self.write(")")
 
     boolops = {_ast.And: 'and', _ast.Or: 'or'}
+
     def _BoolOp(self, t):
         self.write("(")
         self.dispatch(t.values[0])
@@ -393,7 +418,7 @@ class Unparser:
             self.dispatch(v)
         self.write(")")
 
-    def _Attribute(self,t):
+    def _Attribute(self, t):
         self.dispatch(t.value)
         self.write(".")
         self.write(t.attr)
@@ -454,25 +479,25 @@ class Unparser:
     # others
     def _arguments(self, t):
         first = True
-        nonDef = len(t.args)-len(t.defaults)
+        nonDef = len(t.args) - len(t.defaults)
         for a in t.args[0:nonDef]:
-            if first:first = False
+            if first: first = False
             else: self.write(", ")
             self.dispatch(a)
-        for a,d in zip(t.args[nonDef:], t.defaults):
-            if first:first = False
+        for a, d in zip(t.args[nonDef:], t.defaults):
+            if first: first = False
             else: self.write(", ")
             self.dispatch(a),
             self.write("=")
             self.dispatch(d)
         if t.vararg:
-            if first:first = False
+            if first: first = False
             else: self.write(", ")
-            self.write("*"+t.vararg)
+            self.write("*" + t.vararg)
         if t.kwarg:
-            if first:first = False
+            if first: first = False
             else: self.write(", ")
-            self.write("**"+t.kwarg)
+            self.write("**" + t.kwarg)
 
     def _keyword(self, t):
         self.write(t.arg)
@@ -485,30 +510,31 @@ class Unparser:
         self.write(": ")
         self.dispatch(t.body)
 
+
 def roundtrip(filename, output=sys.stdout):
     source = open(filename).read()
     tree = compile(source, filename, "exec", 0x400)
     Unparser(tree, output)
 
 
-
 def testdir(a):
     try:
         names = [n for n in os.listdir(a) if n.endswith('.py')]
     except OSError:
-        print >> sys.stderr, "Directory not readable: %s" % a
+        print("Directory not readable: %s" % a, file=sys.stderr)
     else:
         for n in names:
             fullname = os.path.join(a, n)
             if os.path.isfile(fullname):
-                output = cStringIO.StringIO()
-                print 'Testing %s' % fullname
+                output = io.StringIO()
+                print('Testing %s' % fullname)
                 try:
                     roundtrip(fullname, output)
-                except Exception, e:
-                    print '  Failed to compile, exception is %s' % repr(e)
+                except Exception as e:
+                    print('  Failed to compile, exception is %s' % repr(e))
             elif os.path.isdir(fullname):
                 testdir(fullname)
+
 
 def main(args):
     if args[0] == '--testdir':
@@ -518,5 +544,6 @@ def main(args):
         for a in args:
             roundtrip(a)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     main(sys.argv[1:])

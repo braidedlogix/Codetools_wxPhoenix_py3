@@ -8,6 +8,7 @@ from numpy import array
 from codetools.contexts.tests.multi_context_test_case import MultiContextTestCase
 from codetools.contexts.api import MultiContext, GeoContext
 
+
 class MultiContextWithGeoContextTestCase(MultiContextTestCase):
     """ Test a MultiContext with a GeoContext at the top.
 
@@ -27,7 +28,7 @@ class MultiContextWithGeoContextTestCase(MultiContextTestCase):
     def matched_input_output_pair(self):
         """ Return values for testing dictionary get/set, etc.
         """
-        return array((1,2,3)), array((1,2,3))
+        return array((1, 2, 3)), array((1, 2, 3))
 
 
 if __name__ == '__main__':

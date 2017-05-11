@@ -1,9 +1,7 @@
-
 from codetools.contexts.api import DataContext
 
 from codetools.execution.executing_context import (CodeExecutable,
-    ExecutingContext)
-
+                                                   ExecutingContext)
 
 ce = CodeExecutable(code="c = a + b")
 
@@ -28,6 +26,7 @@ def test_basic():
     assert ec['a'] == 4
     assert ec['c'] == 6
 
+
 def test_defer_execution():
     """ Does deferring execution work?
     """
@@ -42,6 +41,7 @@ def test_defer_execution():
     ec.defer_execution = False
     assert 'c' in ec
     assert ec['c'] == 3
+
 
 def test_code_executable():
     """ Does a CodeExecutable work correctly?

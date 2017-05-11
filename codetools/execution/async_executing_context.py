@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 import contextlib
 import threading
@@ -14,7 +13,7 @@ from concurrent.futures import Executor, Future
 from concurrent.futures import ThreadPoolExecutor
 
 from traits.api import (Instance, Dict, Event, Code, Any, on_trait_change,
-        Bool, Undefined, Supports)
+                        Bool, Undefined, Supports)
 
 from codetools.contexts.data_context import DataContext
 from .executing_context import ExecutingContext
@@ -42,8 +41,8 @@ class AsyncExecutingContext(ExecutingContext):
     executable = Any
 
     # The local execution namespace
-    subcontext = Supports(IListenableContext, factory=DataContext,
-        rich_compare=False)
+    subcontext = Supports(
+        IListenableContext, factory=DataContext, rich_compare=False)
 
     # Fired when an exception occurs during execution.
     # Carries the exception.
@@ -164,10 +163,8 @@ class AsyncExecutingContext(ExecutingContext):
         """
         with self._state_lock:
             yield
-            submit_new = (
-                self._future is None and self._update_pending and
-                not self._execution_deferred
-            )
+            submit_new = (self._future is None and self._update_pending and
+                          not self._execution_deferred)
             if submit_new:
                 self._update_pending = False
                 self._future = self.executor.submit(self._worker)
@@ -258,7 +255,7 @@ class AsyncExecutingContext(ExecutingContext):
     def _code_changed(self, old, new):
         try:
             self.executable.code = new
-        except Exception, e:
+        except Exception as e:
             self.exception = e
             return
         self.execute()
@@ -280,8 +277,11 @@ class AsyncExecutingContext(ExecutingContext):
             return
 
         event.veto = True
-        self._fire_event(added=event.added, removed=event.removed,
-            modified=event.modified, context=event.context)
+        self._fire_event(
+            added=event.added,
+            removed=event.removed,
+            modified=event.modified,
+            context=event.context)
 
 
 if __name__ == '__main__':
@@ -294,43 +294,43 @@ if __name__ == '__main__':
     pipeline = AsyncExecutingContext(context=ns, code=code, executor=executor)
 
     def printer(args):
-        print 'notification:', args
+        print('notification:', args)
 
-    print "initial assignment"
+    print("initial assignment")
     event = threading.Event()
     pipeline.on_trait_change(event.set, 'updated')
     pipeline.on_trait_change(printer, 'updated')
     pipeline.on_trait_change(printer, 'exception')
     event.wait(wait_time)
-    print pipeline.context
+    print(pipeline.context)
 
-    print "assign c"
+    print("assign c")
     event.clear()
     pipeline['c'] = 4
     event.wait(wait_time)
-    print pipeline.context
+    print(pipeline.context)
 
-    print "assign a"
+    print("assign a")
     event.clear()
     pipeline['a'] = 4
     event.wait(wait_time)
-    print pipeline.context
+    print(pipeline.context)
 
-    print "update code"
+    print("update code")
     event.clear()
     pipeline.code = 'c = a**2 + b; d = c - a'
     event.wait(wait_time)
-    print pipeline.context
+    print(pipeline.context)
 
-    print "rapid update"
+    print("rapid update")
     updates = 0
-    for i in xrange(10):
+    for i in range(10):
         event.clear()
         pipeline['a'] = i
     event.wait(wait_time)
-    print pipeline.context
+    print(pipeline.context)
 
-    print "code error"
+    print("code error")
     event.clear()
     pipeline.code = 'c = a**2 + b; d = c - z'
     event.wait(wait_time)

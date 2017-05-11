@@ -25,10 +25,10 @@ class WithMaskTestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
         dc = DataContext(name='dc')
         self.context = DataContext(subcontext=dc)
-        dc['depth'] = arange(0.,10000., 1000.)
+        dc['depth'] = arange(0., 10000., 1000.)
         self.context['context'] = dc.subcontext
-        self.code_dir = os.path.join(os.path.dirname(__file__),
-                                     'with_mask_codes')
+        self.code_dir = os.path.join(
+            os.path.dirname(__file__), 'with_mask_codes')
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -41,7 +41,7 @@ class WithMaskTestCase(unittest.TestCase):
         """ Assigning floats to arrays
         """
 
-        file_object = open(os.path.join(self.code_dir,'test1.py'), 'r')
+        file_object = open(os.path.join(self.code_dir, 'test1.py'), 'r')
         code = file_object.read()
         file_object.close()
 
@@ -51,19 +51,18 @@ class WithMaskTestCase(unittest.TestCase):
         depth = arange(0., 10000., 1000.)
         desired_vp = zeros(depth.shape)
         desired_vs = zeros(depth.shape)
-        desired_vp[(depth<4000.0) & (depth > 1000.0)] = 1.0
-        desired_vs[(depth<4000.0) & (depth > 1000.0)] = 1.5
+        desired_vp[(depth < 4000.0) & (depth > 1000.0)] = 1.0
+        desired_vs[(depth < 4000.0) & (depth > 1000.0)] = 1.5
 
         # Check equal
         self.assertTrue((desired_vp == self.context['vp']).all())
         self.assertTrue((desired_vs == self.context['vs']).all())
-
 
     def test2(self):
         """ Different sized arrays
         """
 
-        file_object = open(os.path.join(self.code_dir,'test2.py'), 'r')
+        file_object = open(os.path.join(self.code_dir, 'test2.py'), 'r')
         code = file_object.read()
         file_object.close()
 
@@ -73,19 +72,18 @@ class WithMaskTestCase(unittest.TestCase):
         depth = arange(0., 10000., 1000.)
         desired_vp = zeros(depth.shape)
         desired_vs = zeros(depth.shape)
-        desired_vp[(depth<4000.0) & (depth > 1000.0)] = 1.0
-        desired_vs[(depth<4000.0) & (depth > 1000.0)] = 1.5
+        desired_vp[(depth < 4000.0) & (depth > 1000.0)] = 1.0
+        desired_vs[(depth < 4000.0) & (depth > 1000.0)] = 1.5
 
         # Check equal
         self.assertTrue((desired_vp == self.context['vp']).all())
         self.assertTrue((desired_vs == self.context['vs']).all())
 
-
     def test3(self):
         """ Same sized array assignments within 'with' block
         """
 
-        file_object = open(os.path.join(self.code_dir,'test3.py'), 'r')
+        file_object = open(os.path.join(self.code_dir, 'test3.py'), 'r')
         code = file_object.read()
         file_object.close()
 
@@ -98,7 +96,6 @@ class WithMaskTestCase(unittest.TestCase):
         # Check equal
         self.assertTrue((desired_vp == self.context['vp']).all())
         self.assertTrue((desired_vs == self.context['vs']).all())
-
 
 
 if __name__ == "__main__":

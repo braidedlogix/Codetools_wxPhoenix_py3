@@ -11,22 +11,25 @@ def grep(pattern, lines):
         if re.search(pattern, line):
             yield line
 
+
 def main():
 
     try:
         [_, file] = sys.argv
     except (ValueError, IOError):
-        print >>sys.stderr, 'Usage: %s /path/to/compiler.ast.py' % sys.argv[0]
+        print(
+            'Usage: %s /path/to/compiler.ast.py' % sys.argv[0],
+            file=sys.stderr)
         sys.exit(1)
     s = open(file).read()
 
-    print '# Extend compiler.ast with a structure-preserving children query.'
-    print '#'
-    print '# Automatically generated on %s from:' % time.asctime()
-    print '#   %s' % os.path.realpath(file)
-    print
-    print 'import compiler.ast as ast'
-    print
+    print('# Extend compiler.ast with a structure-preserving children query.')
+    print('#')
+    print('# Automatically generated on %s from:' % time.asctime())
+    print('#   %s' % os.path.realpath(file))
+    print()
+    print('import compiler.ast as ast')
+    print()
 
     # (A line starts with 'return "' iff it's a one-line __repr__ definition)
     for line in grep('return "', open(file).read().split('\n')):
@@ -40,7 +43,8 @@ def main():
         children = '[%s]' % children[1:-1]
 
         # Construct 'getChildrenTree' definition
-        print 'ast.%s.getChildrenTree = lambda self: %s' % (class_, children)
+        print('ast.%s.getChildrenTree = lambda self: %s' % (class_, children))
+
 
 if __name__ == '__main__':
     main()

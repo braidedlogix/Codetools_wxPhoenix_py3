@@ -32,8 +32,8 @@ class NameFilterContextTestCase(unittest.TestCase):
         """
         context = NameFilterContext(names=['foo'])
 
-        self.assertTrue(context.allows(1,'foo'))
-        self.assertFalse(context.allows(1,'bar'))
+        self.assertTrue(context.allows(1, 'foo'))
+        self.assertFalse(context.allows(1, 'bar'))
 
     def test_set_allowed_name(self):
         """ Does the context accept names that aren't in its name list?
@@ -42,7 +42,7 @@ class NameFilterContextTestCase(unittest.TestCase):
 
         context['foo'] = 1
         self.assertEqual(context['foo'], 1)
-        self.assertFalse(context.allows(1,'bar'))
+        self.assertFalse(context.allows(1, 'bar'))
 
     def test_set_disallowed_name(self):
         """ Does the context reject names that aren't in its name list?
@@ -85,7 +85,8 @@ def test_checkpoint():
 
 
 def test_checkpoint_nested():
-    d = NameFilterContext(names=['a', 'b'], subcontext=NameFilterContext(names=['a', 'b']))
+    d = NameFilterContext(
+        names=['a', 'b'], subcontext=NameFilterContext(names=['a', 'b']))
     d['a'] = object()
     d['b'] = object()
     copy = d.checkpoint()

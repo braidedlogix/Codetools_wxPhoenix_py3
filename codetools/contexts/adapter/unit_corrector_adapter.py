@@ -6,18 +6,16 @@
 # LICENSE.txt
 #
 
-from __future__ import absolute_import
-
 # ETS library imports
 from scimath.units.api import UnitArray
 from traits.api import Dict
 
 # Local imports
 from .unit_manipulation_adapter import UnitManipulationAdapter
-from .unit_converter_functions import  unit_array_units_overwriter
+from .unit_converter_functions import unit_array_units_overwriter
 
+unit_corrector_converters = {UnitArray: unit_array_units_overwriter}
 
-unit_corrector_converters =  {UnitArray: unit_array_units_overwriter}
 
 class UnitCorrectorAdapter(UnitManipulationAdapter):
     """ Overwrite units on an object with a new set of units.  The new units
@@ -32,7 +30,3 @@ class UnitCorrectorAdapter(UnitManipulationAdapter):
     """
     # override with a set of converters that add units to objects
     converters = Dict(unit_corrector_converters)
-
-
-
-

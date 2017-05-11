@@ -8,7 +8,6 @@
 """ Helper methods for the context package.
 """
 
-from __future__ import absolute_import
 
 def compare_objects(object1, object2):
     """ Do a rich comparison of 2 given objects
@@ -39,7 +38,7 @@ def compare_objects(object1, object2):
         if not check_equal:
             return False
 
-        for k in object1.keys():
+        for k in list(object1.keys()):
             check_equal = compare_objects(object1[k], object2[k])
             if not check_equal:
                 return False
@@ -58,6 +57,7 @@ def compare_objects(object1, object2):
 
     return True
 
+
 def safe_repr(obj, limit=1000):
     """ Find the repr of the object, but limit the number of characters.
     """
@@ -66,8 +66,6 @@ def safe_repr(obj, limit=1000):
         hlimit = limit // 2
         r = '%s ... %s' % (r[:hlimit], r[-hlimit:])
     return r
-
-
 
 
 ### EOF ------------------------------------------------------------------------

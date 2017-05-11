@@ -5,17 +5,14 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-
 """ Context holding multiple subcontexts.
 """
-
-from __future__ import absolute_import
 
 from itertools import chain
 from UserDict import DictMixin
 
-from traits.api import (Bool, List, Str, Undefined, Supports,
-    adapt, provides, on_trait_change)
+from traits.api import (Bool, List, Str, Undefined, Supports, adapt, provides,
+                        on_trait_change)
 
 from .data_context import DataContext, ListenableMixin, PersistableMixin
 from .i_context import ICheckpointable, IDataContext, IRestrictedContext
@@ -39,7 +36,6 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
     def __init__(self, *subcontexts, **traits):
         subcontexts = list(subcontexts)
         super(MultiContext, self).__init__(subcontexts=subcontexts, **traits)
-
 
     #### IContext interface ####################################################
 
@@ -100,7 +96,8 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
 
         # Let subtypes dictate compatibility independently of contained contexts
         if not self.allows(value, key):
-            raise ValueError('Disallowed mapping: %s = %s' % (key, safe_repr(value)))
+            raise ValueError('Disallowed mapping: %s = %s' %
+                             (key, safe_repr(value)))
 
         set = False
         blocking_contexts = []
@@ -136,11 +133,11 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
             del c[key]
 
         if not set:
-            raise ValueError('Disallowed mapping: %s = %s' % (key, safe_repr(value)))
+            raise ValueError('Disallowed mapping: %s = %s' %
+                             (key, safe_repr(value)))
 
     def keys(self):
-        return list(set(chain(*[c.keys() for c in self.subcontexts])))
-
+        return list(set(chain(* [list(c.keys()) for c in self.subcontexts])))
 
     # Expose DictMixin's get method over HasTraits'.
     get = DictMixin.get
@@ -149,12 +146,11 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
         # Maybe a good default string
         subcontext_str = '[%s]' % ', '.join([str(x) for x in self.subcontexts])
         return '%s(name=%r, subcontexts=%s)' % (type(self).__name__, self.name,
-            subcontext_str)
+                                                subcontext_str)
 
     def __repr__(self):
         # Maybe a good default representation
         return '%s(name=%r)' % (type(self).__name__, self.name)
-
 
     #### IRestrictedContext interface ##########################################
 
@@ -163,7 +159,6 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
             if c.allows(value, name=name):
                 return True
         return False
-
 
     #### Trait Event Handlers ##################################################
 
@@ -177,8 +172,11 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
 
         event.veto = self.veto_subcontext_modified
 
-        self._fire_event(added=event.added, removed=event.removed,
-            modified=event.modified, context=event.context)
+        self._fire_event(
+            added=event.added,
+            removed=event.removed,
+            modified=event.modified,
+            context=event.context)
 
     def _subcontexts_items_changed(self, event):
         """ Trait listener for items of subcontexts list.
@@ -189,12 +187,12 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
         # Add to the list of items added
         if len(event.added):
             for context in event.added:
-                added.extend(context.keys())
+                added.extend(list(context.keys()))
 
         # Add to the list of items removed
         if len(event.removed):
             for context in event.removed:
-                removed.extend(context.keys())
+                removed.extend(list(context.keys()))
 
         self._fire_event(added=added, removed=removed)
 
@@ -225,4 +223,3 @@ class MultiContext(ListenableMixin, PersistableMixin, DictMixin):
             new_subcontexts.append(checkpointable_subcontext.checkpoint())
         copy.subcontexts = new_subcontexts
         return copy
-

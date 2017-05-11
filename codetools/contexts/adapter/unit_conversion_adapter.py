@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-
 """ Experimental adapter that, given a context, adapts it to a particular set
     of units.
 
@@ -46,7 +45,6 @@
     This would allow some external object to examine all of them at once and
     them make intelligent decisions about how to optimize their application.
 """
-from __future__ import absolute_import
 
 # ETS library imports
 from scimath.units.api import UnitArray
@@ -58,6 +56,7 @@ from .unit_converter_functions import unit_array_units_converter
 
 conversion_converters = {UnitArray: unit_array_units_converter}
 
+
 class UnitConversionAdapter(UnitManipulationAdapter):
     """
 
@@ -66,8 +65,3 @@ class UnitConversionAdapter(UnitManipulationAdapter):
     """
     # override with a set of converters customized for unit conversion.
     converters = Dict(conversion_converters)
-
-
-
-
-

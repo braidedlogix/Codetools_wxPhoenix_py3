@@ -5,10 +5,8 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 from traits.api import HasTraits
-
 """ Base class for all context adapters.
 
     Actually, this should probably be an AbstractContext...
@@ -42,4 +40,3 @@ class AbstractContextAdapter(HasTraits):
         """ Write a value into the underlying context.
         """
         raise NotImplementedError
-

@@ -8,10 +8,9 @@
 """ Define an IContext which will execute code in response to changes in its
 namespace.
 """
-from __future__ import absolute_import
 
-from traits.api import (Bool, HasTraits, List, Str, Supports,
-    Undefined, adapt, provides, on_trait_change)
+from traits.api import (Bool, HasTraits, List, Str, Supports, Undefined, adapt,
+                        provides, on_trait_change)
 
 from codetools.contexts.data_context import DataContext
 from codetools.contexts.i_context import IContext, IListenableContext
@@ -37,7 +36,7 @@ class CodeExecutable(HasTraits):
         if globals is None:
             globals = {}
 
-        exec self.code in globals, icontext
+        exec(self.code, globals, icontext)
         return set(inputs), set(outputs)
 
 
@@ -48,8 +47,8 @@ class ExecutingContext(DataContext):
     """
 
     # Override to provide a more specific requirement.
-    subcontext = Supports(IListenableContext, factory=DataContext,
-        rich_compare=False)
+    subcontext = Supports(
+        IListenableContext, factory=DataContext, rich_compare=False)
 
     executable = Supports(IExecutable, factory=CodeExecutable)
 
@@ -111,5 +110,8 @@ class ExecutingContext(DataContext):
 
         event.veto = True
 
-        self._fire_event(added=event.added, removed=event.removed,
-            modified=event.modified, context=event.context)
+        self._fire_event(
+            added=event.added,
+            removed=event.removed,
+            modified=event.modified,
+            context=event.context)

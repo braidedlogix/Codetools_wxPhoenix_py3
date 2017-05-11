@@ -2,6 +2,7 @@ import ast
 from ast import Module, NodeTransformer
 import token
 
+
 class BlockTransformer(NodeTransformer, object):
     """Specialize how code parses into ASTs for Blocks."""
 

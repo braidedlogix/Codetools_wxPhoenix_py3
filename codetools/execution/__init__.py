@@ -6,5 +6,3 @@
 #-----------------------------------------------------------------------------
 """ Part of the CodeTools project of the Enthought Tool Suite.
 """
-
-

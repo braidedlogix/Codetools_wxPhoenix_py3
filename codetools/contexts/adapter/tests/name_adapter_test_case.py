@@ -3,7 +3,7 @@ import unittest
 
 # Geo Library imports
 from codetools.contexts.api import (AdaptedDataContext, DataContext,
-                                                NameAdapter)
+                                    NameAdapter)
 
 
 class NameAdapterTestCase(unittest.TestCase):
@@ -23,12 +23,11 @@ class NameAdapterTestCase(unittest.TestCase):
         self.context.update(fun=1, bar=2, baz=3, not_mapped=4)
 
         # Add an adapter
-        self.adapter = NameAdapter(map={"foo":"fun", "bar":"baz"})
+        self.adapter = NameAdapter(map={"foo": "fun", "bar": "baz"})
         self.context.push_adapter(self.adapter)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-
 
     ###########################################################################
     # MaskingAdapterTestCase interface

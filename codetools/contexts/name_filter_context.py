@@ -5,7 +5,6 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 # Enthought library imports
 from traits.api import Any
@@ -27,8 +26,8 @@ class NameFilterContext(DataContext):
     ##########################################################################
 
     # The list of names that are allowed into this context.
-    names = Any(copy='shallow')  #List -- any container that supports 'in' will work.
-
+    names = Any(
+        copy='shallow')  #List -- any container that supports 'in' will work.
 
     def _names_default(self):
         return []
@@ -41,4 +40,3 @@ class NameFilterContext(DataContext):
         result = name in self.names
 
         return result
-

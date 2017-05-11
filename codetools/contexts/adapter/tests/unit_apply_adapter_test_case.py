@@ -10,8 +10,8 @@ from scimath.units.length import meters
 # Geo library imports
 from codetools.contexts.api import UnitApplyAdapter
 
-class UnitApplyAdapterTestCase(unittest.TestCase):
 
+class UnitApplyAdapterTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
@@ -21,8 +21,8 @@ class UnitApplyAdapterTestCase(unittest.TestCase):
     def test_discovers_units(self):
         getitem_units = {'depth': meters}
         adapter = UnitApplyAdapter(getitem_units=getitem_units)
-        name, value = adapter.adapt_getitem(None, 'depth', array((1,2,3)))
-        self.assertEqual(value.units,meters)
+        name, value = adapter.adapt_getitem(None, 'depth', array((1, 2, 3)))
+        self.assertEqual(value.units, meters)
 
 
 if __name__ == '__main__':

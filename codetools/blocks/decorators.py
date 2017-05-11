@@ -5,25 +5,26 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 import sys
 import linecache
 
 from .block import Block
 
+
 def _detect_indentation_level(source):
     # Detect the indentation level
     done = False
     col = 0
     for line in source:
-        for col,char in enumerate(line):
+        for col, char in enumerate(line):
             if char != ' ':
                 done = True
                 break
         if done:
             break
     return col
+
 
 def _extract_indented_part(source, col):
     # Now we know how much leading space there is in the code.  Next, we
@@ -33,7 +34,7 @@ def _extract_indented_part(source, col):
     triple_string = 0
     src_lines = []
     doc_lines = []
-    for lno,line in enumerate(source):
+    for lno, line in enumerate(source):
         if triple_string:
             if line.rstrip().endswith('"""'):
                 triple_string = 0
@@ -54,6 +55,7 @@ def _extract_indented_part(source, col):
             break
     src = ''.join(src_lines)
     return src, "".join(doc_lines)
+
 
 def _remove_head(source, name):
     # source is a list of source lines, beginning either immediately after the
@@ -79,6 +81,7 @@ def _remove_head(source, name):
         source = source[i:]
     return source
 
+
 def strip_whitespace(source, name, spaces_for_tab):
     # Expand tabs to avoid any confusion.
     wsource = [l.expandtabs(spaces_for_tab) for l in source]
@@ -90,21 +93,22 @@ def strip_whitespace(source, name, spaces_for_tab):
     #print 'SRC:\n<<<<<<<>>>>>>>\n%s<<<<<>>>>>>' % src  # dbg
     return src
 
+
 def findsource_file(f, name):
     # See function _remove_head for comment about f_lineno, and adjustment.
     lines = linecache.getlines(f.f_code.co_filename)
     wsource = lines[f.f_lineno:]
     return strip_whitespace(wsource, name, 8)
 
+
 def findsource_ipython(f, name):
     from IPython import ipapi
     ip = ipapi.get()
-    wsource = [l+'\n' for l in
-               ip.IP.input_hist_raw[-1].splitlines()[1:]]
+    wsource = [l + '\n' for l in ip.IP.input_hist_raw[-1].splitlines()[1:]]
     return strip_whitespace(wsource, name, 4)
 
 
-def func2str(func,backframes=1):
+def func2str(func, backframes=1):
     """Decorator to turn a code-block inside of a function to
     a string::
 
@@ -118,12 +122,13 @@ def func2str(func,backframes=1):
     callframe = sys._getframe(backframes)
     filename = callframe.f_code.co_filename
     if filename == '<stdin>':
-        raise ValueError, "Decorator can't be used here."
+        raise ValueError("Decorator can't be used here.")
     elif filename == '<ipython console>':
-        s = findsource_ipython(callframe, func.func_name)
+        s = findsource_ipython(callframe, func.__name__)
     else:
-        s = findsource_file(callframe, func.func_name)
+        s = findsource_file(callframe, func.__name__)
     return s
+
 
 def func2co(func):
     """Decorator to turn a code-block defined as a function into
@@ -139,6 +144,7 @@ def func2co(func):
     s = func2str(func, backframes=2)
     return compile(s, 'anonymous', 'exec')
 
+
 def func2block(func):
     """Decorator to turn a code-block defined as a function into
     a code-object::
@@ -152,5 +158,3 @@ def func2block(func):
     """
     s = func2str(func, backframes=2)
     return Block(s)
-
-

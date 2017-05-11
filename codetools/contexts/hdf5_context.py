@@ -5,12 +5,12 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-from __future__ import absolute_import
 
 from traits.api import HasTraits, List, Str, Property, Any, provides
 from codetools.contexts.api import IRestrictedContext
 
 import tables
+
 
 @provides(IRestrictedContext)
 class Hdf5Context(HasTraits):
@@ -34,7 +34,6 @@ class Hdf5Context(HasTraits):
     # The paths are specified using '.' notation.
     # fixme: use dot or slash notation?  foo.bar or /foo/bar?
     path = List(Str)
-
 
     # The HDF file name or object that is referred to by this context.
     # fixme: Add this to allow a single place to set either name or object.
@@ -72,14 +71,13 @@ class Hdf5Context(HasTraits):
             node_str = '.'.join(['self.file_object', dir])
             try:
                 node = eval(node_str)
-                if name in node._v_children.keys():
+                if name in list(node._v_children.keys()):
                     location = dir
                     break
             except tables.NoSuchNodeError:
                 continue
 
         return location
-
 
     ##########################################################################
     # IRestrictedContext Interface
@@ -89,7 +87,6 @@ class Hdf5Context(HasTraits):
         # fixme: We shouldn't ever get to this point in a context at the
         #        moment.
         raise NotImplementedError
-
 
     ##########################################################################
     # Dictionary Interface
@@ -105,7 +102,7 @@ class Hdf5Context(HasTraits):
             node_str = '.'.join(['self.file_object', dir])
             try:
                 node = eval(node_str)
-                all_names.update(node._v_leaves.keys())
+                all_names.update(list(node._v_leaves.keys()))
             except tables.NoSuchNodeError:
                 continue
 
@@ -116,10 +113,10 @@ class Hdf5Context(HasTraits):
         """Return an iterator of the (key,value) pairs in the namespace
         """
         # Fixme: Extract and share (and improve) tree-walking code in keys()
-        return ((k, self.__getitem__(k)) for k in self.keys())
+        return ((k, self.__getitem__(k)) for k in list(self.keys()))
 
     def __contains__(self, name):
-        return name in self.keys()
+        return name in list(self.keys())
 
     def __getitem__(self, name):
         """
@@ -166,7 +163,6 @@ class Hdf5Context(HasTraits):
         """
         raise NotImplementedError
 
-
     def __delitem__(self, name):
         """ Delete an item from the context.
 
@@ -176,4 +172,3 @@ class Hdf5Context(HasTraits):
             this one.
         """
         raise NotImplementedError
-

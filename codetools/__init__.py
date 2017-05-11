@@ -6,6 +6,4 @@ try:
 except ImportError:
     __version__ = 'not-built'
 
-__requires__ = [
-    'traits',
-]
+__requires__ = ['traits', ]

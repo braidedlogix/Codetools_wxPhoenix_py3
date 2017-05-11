@@ -9,13 +9,13 @@
     namespace: decorator
     namespace_from_keywords: function
 """
-from __future__ import absolute_import
 
 from .decorators import func2str
 
 ##############################################################################
 # Public Interface
 ##############################################################################
+
 
 def namespace_from_keywords(**kw):
     """ Return a namespace containing an attribute matching each kw argument.
@@ -72,11 +72,11 @@ def namespace(function):
         ns = defaults.copy()
         ns.update(kw)
 
-        positional = dict(zip(arg_names, args))
+        positional = dict(list(zip(arg_names, args)))
         ns.update(positional)
-        globs = function.func_globals
+        globs = function.__globals__
 
-        exec code_object in globs, ns
+        exec(code_object, globs, ns)
 
         # Save the original function name in the namespace as
         # the attribute '_func_name'.
@@ -106,7 +106,6 @@ class Namespace(object):
     def __init__(self, namespace):
         self.__dict__.update(namespace)
 
-
     def __iter__(self):
         """Returns iterator over (name, object) pairs in the namespace
         Reasons to do this instead of iteritems:
@@ -116,7 +115,7 @@ class Namespace(object):
         1. This is a view of a dictionary and when you iterate on
         a dictionary you get keys.
         """
-        return self.__dict__.iteritems()
+        return iter(self.__dict__.items())
 
     def __getitem__(self, key):
         """ Support attribute access by index notation (square brackets).
@@ -133,6 +132,7 @@ class Namespace(object):
 # Utilities
 ##############################################################################
 
+
 def args_and_keywords(function):
     """ Return the information about the function's argument signature.
 
@@ -148,12 +148,12 @@ def args_and_keywords(function):
             [('high', 1.0), ('low', 0.0), ('mode', None)]
 
     """
-    arg_count = function.func_code.co_argcount
-    arg_names = function.func_code.co_varnames[:arg_count]
+    arg_count = function.__code__.co_argcount
+    arg_names = function.__code__.co_varnames[:arg_count]
     try:
-        kw_arg_count = len(function.func_defaults)
+        kw_arg_count = len(function.__defaults__)
         kw_names = arg_names[-kw_arg_count:]
-        kw_dict = dict(zip(kw_names, function.func_defaults))
+        kw_dict = dict(list(zip(kw_names, function.__defaults__)))
     except TypeError:
         kw_dict = {}
 

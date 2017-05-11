@@ -5,17 +5,14 @@
 # This file is open source software distributed according to the terms in
 # LICENSE.txt
 #
-
 """ A wrapper around IListenableContexts which expose a standard HasTraits
 interface to its contents.
 """
 
-from __future__ import absolute_import
-
 from contextlib import contextmanager
 
-from traits.api import (Any, Bool, HasTraits, Supports, Trait,
-    Undefined, on_trait_change)
+from traits.api import (Any, Bool, HasTraits, Supports, Trait, Undefined,
+                        on_trait_change)
 
 from .i_context import IListenableContext
 
@@ -55,12 +52,12 @@ class TraitslikeContextWrapper(HasTraits):
         >>> tcw.add_traits('a', 'b', c=Int)
         """
         if self._context is not None:
-            keys = self._context.keys()
+            keys = list(self._context.keys())
         else:
             keys = []
 
         with self._synch_off():
-            for name, trait in [(x, Any()) for x in args] + kwds.items():
+            for name, trait in [(x, Any()) for x in args] + list(kwds.items()):
                 self.add_trait(name, Trait(trait, in_context=True))
                 # Set the value to that in the context.
                 if name in keys:
@@ -83,7 +80,8 @@ class TraitslikeContextWrapper(HasTraits):
     @on_trait_change('_context')
     def _context_changed(self, object, name, old, new):
         if old is not None:
-            old.on_trait_change(self._context_items_modified, 'items_modified', remove=True)
+            old.on_trait_change(
+                self._context_items_modified, 'items_modified', remove=True)
         if new is not None:
             new.on_trait_change(self._context_items_modified, 'items_modified')
 
@@ -131,5 +129,3 @@ class TraitslikeContextWrapper(HasTraits):
             yield
         finally:
             self._synched = _old_synched
-            
-

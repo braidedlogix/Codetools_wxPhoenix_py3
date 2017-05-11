@@ -6,27 +6,30 @@ as it executes.
 from traits.api import HasTraits, on_trait_change
 from codetools.contexts.api import DataContext, context_function
 
+
 class ListeningDataContext(DataContext):
     """ A simple subclass of DataContext which listens for items_modified
     events and pretty-prints them."""
 
     @on_trait_change('items_modified')
     def print_event(self, event):
-        print "Event: items_modified"
+        print("Event: items_modified")
         for added in event.added:
-            print "  Added:", added, "=", repr(self[added])
+            print("  Added:", added, "=", repr(self[added]))
         for modified in event.modified:
-            print "  Modified:", modified, "=", repr(self[modified])
+            print("  Modified:", modified, "=", repr(self[modified]))
         for removed in event.removed:
-            print "  Removed:", removed
+            print("  Removed:", removed)
+
 
 def f(x, t=3):
     """ A function which will fire add, modify and delete events. """
-    y = x+2
+    y = x + 2
     y += 1
     z = '12'
     del z
     return y
+
 
 f = context_function(f, ListeningDataContext)
 
